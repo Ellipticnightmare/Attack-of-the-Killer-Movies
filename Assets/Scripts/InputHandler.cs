@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AKM
-{
+
     public class InputHandler : MonoBehaviour
     {
         public float horizontal;
@@ -48,5 +47,3 @@ namespace AKM
             mouseY = cameraInput.y;
         }
     }
-
-}
