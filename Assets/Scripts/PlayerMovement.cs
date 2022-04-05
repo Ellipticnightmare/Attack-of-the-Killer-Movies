@@ -15,7 +15,10 @@ namespace AKM
 
         public new Rigidbody rigidbody;
         public GameObject normalCamera;
+        [Header("Stats")]
+        [SerializeField]
         float movementSpeed = 5;
+        [SerializeField]
         float rotationSpeed = 10;
 
         void Start()
@@ -40,7 +43,9 @@ namespace AKM
             moveDirection *= speed;
 
             Vector3 projectedVelocity = Vector3.ProjectOnPlane(moveDirection, normalVector);
-            rigidbody.velocity = projectedVelocity;           
+            rigidbody.velocity = projectedVelocity;
+
+            HandleRotation(delta);
         }
 
         #region Movement
