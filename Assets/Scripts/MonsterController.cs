@@ -229,16 +229,16 @@ public class MonsterController : MonoBehaviour
     }
     void updateNodeWeight() //gets run when enemy spots player for the first time, exiting the Roam state
     {
-        int distance = nodeWeightDistance;
+        float distance = nodeWeightDistance;
         webNodePoint x = new webNodePoint();
         int newI = 0;
         for (int i = 0; i < nodeWeb.Count; i++)
         {
-            if (Vector3.Distance(nodeWeb[i], mainCamera.targetTransform.position) < distance)
+            if (Vector3.Distance(nodeWeb[i].nodePoint, mainCamera.targetTransform.position) < distance)
             {
                 x = nodeWeb[i];
                 newI = i;
-                distance = Vector3.Distance(nodeWeb[i], mainCamera.targetTransform.position);
+                distance = Vector3.Distance(nodeWeb[i].nodePoint, mainCamera.targetTransform.position);
             }
         }
         x.weighting = 100;
