@@ -12,6 +12,8 @@ namespace AKM
 
         [HideInInspector]
         public Transform myTransform;
+        [HideInInspector]
+        public AnimatorHandler AnimatorHandler;
 
         public new Rigidbody rigidbody;
         public GameObject normalCamera;
@@ -26,9 +28,9 @@ namespace AKM
             rigidbody = GetComponent<Rigidbody>();
             inputHandler = GetComponent<InputHandler>();
             cameraObject = GameObject.FindGameObjectWithTag("MainCamera").GetComponentInChildren<Camera>().transform;
-
-
+            AnimatorHandler = GetComponentInChildren<AnimatorHandler>();
             myTransform = transform;
+            AnimatorHandler.Initialize();
         }
 
         public void Update()
@@ -47,7 +49,12 @@ namespace AKM
             Vector3 projectedVelocity = Vector3.ProjectOnPlane(moveDirection, normalVector);
             rigidbody.velocity = projectedVelocity;
 
-            HandleRotation(delta);
+            AnimatorHandler.UpdateAnimatorValues(inputHandler.moveAmount, 0);
+
+            if (AnimatorHandler.canRotate)
+            {
+                HandleRotation(delta);
+            }        
         }
 
         #region Movement

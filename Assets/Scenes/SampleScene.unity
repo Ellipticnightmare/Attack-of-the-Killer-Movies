@@ -51085,6 +51085,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myTransform: {fileID: 0}
+  AnimatorHandler: {fileID: 0}
   rigidbody: {fileID: 0}
   normalCamera: {fileID: 0}
   movementSpeed: 5
@@ -51836,6 +51837,10 @@ PrefabInstance:
       propertyPath: m_Constraints
       value: 116
       objectReference: {fileID: 0}
+    - target: {fileID: 8796143784780289428, guid: 94242cd236c0a3148a0afe5a941324de, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: d3463c30387254144b164ff70751eb7a, type: 2}
     m_RemovedComponents:
     - {fileID: 7771091515258019171, guid: 94242cd236c0a3148a0afe5a941324de, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 94242cd236c0a3148a0afe5a941324de, type: 3}
