@@ -283,11 +283,13 @@ public class MonsterController : MonoBehaviour
                         index = i;
                     }
                 }
+                if (targBar != null)
+                    agent.SetDestination(targBar.transform.position);
+                else
+                    Debug.Log(destrucTargs[index]);
             }
-            if (targBar != null)
-                agent.SetDestination(targBar.transform.position);
             else
-                Debug.Log(destrucTargs[index]);
+                BuildNode();
         }
         else
             BuildNode();
