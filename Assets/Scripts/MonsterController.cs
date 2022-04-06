@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Animator))]
+[RequireComponent(typeof(Rigidbody))]
 public class MonsterController : MonoBehaviour
 {
+    [Header("DISABLE THIS UNTIL ANIMATIONS")]
+    public bool hasAnimations;
     NavMeshAgent agent;
     NavMeshPath path;
     List<webNodePoint> nodeWeb;
@@ -50,6 +55,7 @@ public class MonsterController : MonoBehaviour
         switch (EnemyState)
         {
             case enemyState.Roam:
+                if(hasAnimations)
                 anim.SetInteger("state", 0); //walk anim
                 if (canSeePlayer(mainCamera.targetTransform))
                 {
@@ -67,7 +73,8 @@ public class MonsterController : MonoBehaviour
                 }
                 break;
             case enemyState.Chase:
-                anim.SetInteger("state", 1); //run anim
+                if (hasAnimations)
+                    anim.SetInteger("state", 1); //run anim
                 if (trackTimer >= 0)
                     trackTimer -= Time.deltaTime;
                 else
@@ -111,7 +118,8 @@ public class MonsterController : MonoBehaviour
                 pingBarricade(false);
                 break;
             case enemyState.Stunned:
-                anim.SetInteger("state", 2); //Dizzy/stun anim
+                if (hasAnimations)
+                    anim.SetInteger("state", 2); //Dizzy/stun anim
                 agent.speed = 0;
                 agent.angularSpeed = 0;
                 if (stunTimer >= 0)
@@ -123,7 +131,8 @@ public class MonsterController : MonoBehaviour
                 }
                 break;
             case enemyState.Attack:
-                anim.SetInteger("state", 3); //Attack anim
+                if (hasAnimations)
+                    anim.SetInteger("state", 3); //Attack anim
                 break;
         }
         if (!agent.pathPending)
