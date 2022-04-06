@@ -156,7 +156,7 @@ public class MonsterController : MonoBehaviour
             }
         }
     }
-    void BuildNode() /*gets run at start, when enemy exits Roam state,
+    public virtual void BuildNode() /*gets run at start, when enemy exits Roam state,
                       and when enemy reaches their destination in Roam state*/
     {
         bool isValidNewWebPoint = true;
