@@ -77,10 +77,12 @@ public class MonsterController : MonoBehaviour
                 if (hasAnimations)
                     anim.SetInteger("state", 1); //run anim
                 if (trackTimer >= 0)
+                {
                     trackTimer -= Time.deltaTime;
+                    agent.SetDestination(mainCamera.transform.position);
+                }
                 else
                 {
-                    trackTimer = 2;
                     if (canSeePlayer(mainCamera.targetTransform))
                     {
                         if (NavMesh.CalculatePath(transform.position, mainCamera.transform.position, NavMesh.AllAreas, path))
@@ -113,6 +115,7 @@ public class MonsterController : MonoBehaviour
                             EnemyState = enemyState.Roam;
                         }
                     }
+                    trackTimer = 2;
                 }
                 break;
             case enemyState.targetBarricades:
