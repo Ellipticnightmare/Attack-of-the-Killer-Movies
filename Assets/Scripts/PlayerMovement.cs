@@ -25,7 +25,9 @@ namespace AKM
         {
             rigidbody = GetComponent<Rigidbody>();
             inputHandler = GetComponent<InputHandler>();
-            cameraObject = Camera.main.transform;
+            cameraObject = GameObject.FindGameObjectWithTag("MainCamera").GetComponentInChildren<Camera>().transform;
+
+
             myTransform = transform;
         }
 

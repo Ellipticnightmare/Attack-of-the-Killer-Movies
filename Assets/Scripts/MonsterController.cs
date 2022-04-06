@@ -12,7 +12,7 @@ public class MonsterController : MonoBehaviour
     public bool hasAnimations;
     NavMeshAgent agent;
     NavMeshPath path;
-    List<webNodePoint> nodeWeb;
+    List<webNodePoint> nodeWeb = new List<webNodePoint>();
     webNodePoint curNode, nextNode;
     Animator anim;
     public int nodeMinDistance, nodeWeightDistance;
