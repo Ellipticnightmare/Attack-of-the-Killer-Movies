@@ -22,8 +22,10 @@ public class TaskManager : MonoBehaviour
     void Start()
     {
         testTask.title = "Buttery Popcorn";
-        testTask.description = "";
-
+        testTask.description = "Interact with the butter lever to add butter to your popcorn";
+        testTask.numberCompleted = 0;
+        testTask.numToCompletion = 1;
+        testTask.goal.goalType = GoalType.Interact;
         #region Tasks
         allTasks[0].title = "Buttery Popcorn";
         allTasks[0].description = "Yo";
