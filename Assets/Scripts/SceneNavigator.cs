@@ -12,7 +12,7 @@ public class SceneNavigator : MonoBehaviour
 
     private void Awake()
     {
-        DontDestroyOnLoad(gameObject);
+      
     }
 
     public void LoadMainMenu()
@@ -23,6 +23,11 @@ public class SceneNavigator : MonoBehaviour
     public void LoadNewGame()
     {
         SceneManager.LoadScene("SampleScene");
+    }
+
+    public void EndGame()
+    {
+        Application.Quit();
     }
 
 

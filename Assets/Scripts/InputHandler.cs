@@ -12,7 +12,7 @@ public class InputHandler : MonoBehaviour
     public float mouseX;
     public float mouseY;
 
-    PlayerControls inputActions;
+    public PlayerControls inputActions;
     CameraHandler cameraHandler;
 
     Vector2 movementInput;
@@ -45,6 +45,7 @@ public class InputHandler : MonoBehaviour
             inputActions = new PlayerControls();
             inputActions.PlayerMovement.Movement.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();
             inputActions.PlayerMovement.Camera.performed += i => cameraInput = i.ReadValue<Vector2>();
+            
         }
 
         inputActions.Enable();

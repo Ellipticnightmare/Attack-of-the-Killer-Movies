@@ -4,15 +4,21 @@ using UnityEngine;
 
 public class PlayerMasterController : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public Task task;
+    public GameObject resultsScreen;
 
     // Update is called once per frame
     void Update()
     {
-        
+        if(task.isActive)
+        {
+            if(task.goal.isReached())
+            {
+                resultsScreen.SetActive(true);
+                task.TaskComplete();
+                
+                
+            }
+        }
     }
 }

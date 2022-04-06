@@ -21,15 +21,16 @@ public class TaskManager : MonoBehaviour
     
     void Start()
     {
-        testTask.title = "Buttery Popcorn";
-        testTask.description = "Interact with the butter lever to add butter to your popcorn";
+        testTask.title = "Pull that Lever";
+        testTask.description = "Go ahead and pull it, it's just on that wall over there and watch out for that monster";
         testTask.numberCompleted = 0;
         testTask.numToCompletion = 1;
         testTask.goal.goalType = GoalType.Interact;
         #region Tasks
-        allTasks[0].title = "Buttery Popcorn";
-        allTasks[0].description = "Yo";
+        //allTasks[0].title = "Buttery Popcorn";
+        //allTasks[0].description = "Yo";
 
+        AssignTasks();
 
     #endregion
 
@@ -55,7 +56,7 @@ public class TaskManager : MonoBehaviour
     {
         //This is to assign these tasks to the player so that they can be completed
         testTask.isActive = true;
-        //player.task = testTask; 
+        player.GetComponent<PlayerMasterController>().task = testTask;
 
     }
 
