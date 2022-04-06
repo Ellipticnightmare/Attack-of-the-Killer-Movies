@@ -363,6 +363,8 @@ public class MonsterController : MonoBehaviour
             if (hit.collider.gameObject == player.gameObject)
                 output = true;
         }
+        Debug.Log(hit.collider.tag);
+        
         Debug.Log(output);
 
         return output;
