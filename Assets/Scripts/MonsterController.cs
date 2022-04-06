@@ -31,6 +31,7 @@ public class MonsterController : MonoBehaviour
     public bool isClown;
     float clownTimer, trackTimer, stunTimer, attackCooldown, attackCooldownReal;
     Barrier targBar;
+    public LayerMask layerMask;
     // Start is called before the first frame update
     void Start()
     {
@@ -357,7 +358,7 @@ public class MonsterController : MonoBehaviour
         Vector3 targetPosition = player.position;
         Vector3 direction = targetPosition - fromPosition;
         Vector3 posRelative = transform.InverseTransformPoint(player.position);
-        if(Physics.Raycast(this.transform.position, direction, out hit) && posRelative.z > 0 )
+        if(Physics.Raycast(this.transform.position, direction, out hit, layerMask) && posRelative.z > 0 )
         {
             if (hit.collider.gameObject == player.gameObject)
                 output = true;
