@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AnimationHandler : MonoBehaviour
+public class AnimatorHandler : MonoBehaviour
 {
     public Animator anim;
     int vertical;

@@ -12,7 +12,7 @@ public class PlayerLocomotion : MonoBehaviour
     [HideInInspector]
     public Transform myTransform;
     [HideInInspector]
-    public AnimationHandler animationHandler;
+    public AnimatorHandler animatorHandler;
 
     public new Rigidbody rigidbody;
 
@@ -29,10 +29,10 @@ public class PlayerLocomotion : MonoBehaviour
     {
         rigidbody = GetComponent<Rigidbody>();
         inputHandler = GetComponent<InputHandler>();
-        animationHandler = GetComponentInChildren<AnimationHandler>();
+        animatorHandler = GetComponentInChildren<AnimatorHandler>();
         cameraObject = Camera.main.transform;
         myTransform = transform;
-        animationHandler.Initialize();
+        animatorHandler.Initialize();
     }
 
 
@@ -53,7 +53,7 @@ public class PlayerLocomotion : MonoBehaviour
       Vector3 projectedVelocity = Vector3.ProjectOnPlane(moveDirection, normalVector);
       rigidbody.velocity = projectedVelocity;
 
-        if(animationHandler.canRotate)
+        if(animatorHandler.canRotate)
         {
             HandleRotation(delta);
         }
