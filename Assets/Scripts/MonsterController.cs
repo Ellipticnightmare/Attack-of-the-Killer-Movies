@@ -39,7 +39,7 @@ public class MonsterController : MonoBehaviour
         agent = this.GetComponent<NavMeshAgent>();
         anim = this.GetComponent<Animator>();
         path = new NavMeshPath();
-        mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<CameraHandler>();
+        mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponentInParent<CameraHandler>();
         BuildNode();
     }
 
