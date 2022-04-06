@@ -3,47 +3,69 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-    public class InputHandler : MonoBehaviour
+public class InputHandler : MonoBehaviour
+{
+
+    public float horizontal;
+    public float vertical;
+    public float moveAmount;
+    public float mouseX;
+    public float mouseY;
+
+    PlayerControls inputActions;
+    CameraHandler cameraHandler;
+
+    Vector2 movementInput;
+    Vector2 cameraInput;
+
+    public void Start()
     {
-        public float horizontal;
-        public float vertical;
-        public float moveAmount;
-        public float mouseX;
-        public float mouseY;
+        cameraHandler = CameraHandler.singleton;
+    }
 
-        PlayerControls inputActions;
+    private void FixedUpdate()
+    {
+        float delta = Time.fixedDeltaTime;
 
-        Vector2 movementInput;
-        Vector2 cameraInput;
-
-        public void OnEnable()
+        if (cameraHandler != null)
         {
-            if (inputActions == null)
-            {
-                inputActions = new PlayerControls();
-                inputActions.PlayerMovement.Movement.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();
-                inputActions.PlayerMovement.Camera.performed += i => cameraInput = i.ReadValue<Vector2>();
-            }
-
-            inputActions.Enable();
+            cameraHandler.FollowTarget(delta);
+            cameraHandler.HandleCameraRotation(delta, mouseX, mouseY);
         }
-
-        private void OnDiable()
+        else
         {
-            inputActions.Disable();
-        }
-
-        public void TickInput(float delta)
-        {
-            MoveInput(delta);
-        }
-
-        private void MoveInput(float delta)
-        {
-            horizontal = movementInput.x;
-            vertical = movementInput.y;
-            moveAmount = Mathf.Clamp01(Mathf.Abs(horizontal) + Mathf.Abs(vertical));
-            mouseX = cameraInput.x;
-            mouseY = cameraInput.y;
+            Debug.Log("im null guys");
         }
     }
+
+    public void OnEnable()
+    {
+        if (inputActions == null)
+        {
+            inputActions = new PlayerControls();
+            inputActions.PlayerMovement.Movement.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();
+            inputActions.PlayerMovement.Camera.performed += i => cameraInput = i.ReadValue<Vector2>();
+        }
+
+        inputActions.Enable();
+    }
+    private void OnDisable()
+    {
+        inputActions.Disable();
+    }
+    public void TickInput(float delta)
+    {
+        MoveInput(delta);
+    }
+
+    private void MoveInput(float delta)
+    {
+        horizontal = movementInput.x;
+        vertical = movementInput.y;
+        moveAmount = Mathf.Clamp01(Mathf.Abs(horizontal) + Mathf.Abs(vertical));
+        mouseX = cameraInput.x;
+        mouseY = cameraInput.y;
+    }
+
+
+}
