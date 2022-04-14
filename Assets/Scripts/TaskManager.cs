@@ -35,7 +35,7 @@ public class TaskManager : MonoBehaviour
         finalTask.spawnType = SpawnType.Static;
         finalTask.spawnedTaskObjects = null;
         
-
+        /*
         
         allTasks[0].title = "Buttery Popcorn";
         allTasks[0].description = "Yo";
@@ -51,7 +51,7 @@ public class TaskManager : MonoBehaviour
         allTasks[1].numberCompleted = 0;
         allTasks[1].goal.goalType = GoalType.Interact;
         allTasks[1].spawnedTaskObjects = null; // this will spawn a prefab of the task object
-
+        */
         #endregion
     }
     void Start()
@@ -72,7 +72,7 @@ public class TaskManager : MonoBehaviour
         // This will be used to update the task list onscreen and choose from a pool of quests
         taskList.SetActive(true);
 
-        for (int i = activeTasks.Length - 1; i > 0; i--)
+        for (int i = activeTasks.Length - 1; i >= 0; i--)
         {
             int randomInt = Random.Range(0, allTasks.Length);
             int randomTaskLocation = Random.Range(0, taskLocations.Count - 1);
@@ -84,15 +84,20 @@ public class TaskManager : MonoBehaviour
             activeTasks[i].goal = allTasks[randomInt].goal;
             activeTasks[i].spawnType = allTasks[randomInt].spawnType;
             activeTasks[i].spawnedTaskObjects = allTasks[randomInt].spawnedTaskObjects;
-            /*
+            activeTasks[i].spawnLocation = allTasks[randomInt].spawnLocation;
+            
             //instantiate task objects
             if (activeTasks[i].spawnType == SpawnType.Static)
             {
-                for (int s = 0; s > activeTasks[i].spawnedTaskObjects.Length; s++)
+                for (int s = 0; s < activeTasks[i].spawnedTaskObjects.Length; s++)
+                {
 
                     GameObject taskObject = Instantiate(activeTasks[i].spawnedTaskObjects[s], activeTasks[i].spawnLocation);
-                    taskobject.taskName = activeTasks[i].title;
+                    InteractBox box = taskObject.GetComponent<InteractBox>();
+                    box.taskName = activeTasks[i].title;
+                }
             }
+            /*
             else {
                 for (int j = 0; j > activeTasks[i].spawnedTaskObjects.Length; j++)
                 {

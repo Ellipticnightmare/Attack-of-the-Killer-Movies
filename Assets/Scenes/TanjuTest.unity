@@ -1202,6 +1202,36 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 800206976}
   m_CullTransparentMesh: 1
+--- !u!1 &822017499
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 822017500}
+  m_Layer: 0
+  m_Name: RandomTaskLocations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &822017500
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 822017499}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 1610076211}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &829401943
 GameObject:
   m_ObjectHideFlags: 0
@@ -1377,6 +1407,67 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 845703190}
   m_CullTransparentMesh: 1
+--- !u!1 &911269150
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 911269151}
+  m_Layer: 0
+  m_Name: StaticTaskLocations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &911269151
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 911269150}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 948250169}
+  m_Father: {fileID: 1610076211}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &948250168
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 948250169}
+  m_Layer: 0
+  m_Name: LeverPull
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &948250169
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 948250168}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 911269151}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1011352220
 GameObject:
   m_ObjectHideFlags: 0
@@ -1636,12 +1727,96 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
       propertyPath: allTasks.Array.size
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
       propertyPath: activeTasks.Array.size
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[0].title
+      value: Task 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[1].title
+      value: Task 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[2].title
+      value: Task 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[1].spawnType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[2].spawnType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[0].description
+      value: This is task zero
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[1].description
+      value: This is task one
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[2].description
+      value: This is task two
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[0].goal.goalType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[0].spawnLocation
+      value: 
+      objectReference: {fileID: 948250169}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[2].goal.goalType
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[0].numToCompletion
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[1].numToCompletion
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[2].numToCompletion
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[2].numberCompleted
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[2].goal.currentAmount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[0].goal.requiredAmount
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[1].goal.requiredAmount
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[2].goal.requiredAmount
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[0].spawnedTaskObjects.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2913432332656107878, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
+      propertyPath: allTasks.Array.data[0].spawnedTaskObjects.Array.data[0]
+      value: 
+      objectReference: {fileID: 1893730420820938183, guid: df7de6dc04b988d468cd93588a5fe06c, type: 3}
     - target: {fileID: 2913432332717981416, guid: 193af6e382a813b4893c6b7022357ee3, type: 3}
       propertyPath: m_Name
       value: taskNumRequired0
@@ -2055,6 +2230,38 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1607684194}
   m_CullTransparentMesh: 1
+--- !u!1 &1610076210
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1610076211}
+  m_Layer: 0
+  m_Name: TaskLocations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1610076211
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1610076210}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children:
+  - {fileID: 911269151}
+  - {fileID: 822017500}
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1614817821
 GameObject:
   m_ObjectHideFlags: 0

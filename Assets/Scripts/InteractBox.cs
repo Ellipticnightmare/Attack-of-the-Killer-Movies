@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class InteractBox : MonoBehaviour
 {
-    string taskName;
-    float startTime = 0f;
-    float holdTime = 2.0f; // 5 seconds
-    public GameObject resultsScreen;
+    public string taskName;
+    public float startTime = 0f;
+    public float holdTime = 2.0f; // 5 seconds
+    //public GameObject resultsScreen;
 
     private void OnTriggerStay(Collider other)
     {
