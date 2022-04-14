@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class InteractBox : MonoBehaviour
 {
+    string taskName;
     float startTime = 0f;
     float holdTime = 2.0f; // 5 seconds
     public GameObject resultsScreen;
@@ -23,10 +24,19 @@ public class InteractBox : MonoBehaviour
                 // If so, we held the button for [holdTime] seconds.
                 if ((startTime + holdTime) >= Time.time)
                 {
-                    other.gameObject.GetComponent<PlayerMasterController>().task.goal.TaskSectionComplete();
+                    TaskManager taskManager = GameObject.Find("Tasklist").GetComponent<TaskManager>();
+                    foreach(Task activeTask in taskManager.activeTasks)
+                    {
+                        if (taskName == activeTask.title)
+                        {
+                            activeTask.goal.isReached();
+                        }
+                    }
+                    
+                    //other.gameObject.GetComponent<PlayerMasterController>().task.goal.TaskSectionComplete();
                     //other.gameObject.GetComponent<Task>().TaskComplete();
 
-                    resultsScreen.SetActive(true);
+                    //resultsScreen.SetActive(true);
                         
                 }
         }
