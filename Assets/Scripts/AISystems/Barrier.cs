@@ -13,4 +13,8 @@ public class Barrier : MonoBehaviour
     {
         anim.CrossFade("OpenAnim", 0.2f);
     }
+    public void Close()
+    {
+        anim.CrossFade("CloseAnim", 0.2f);
+    }
 }

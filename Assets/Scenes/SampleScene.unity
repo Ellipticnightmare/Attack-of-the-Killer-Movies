@@ -896,6 +896,9 @@ MonoBehaviour:
   moveSpeed: 3
   rotSpeed: 2
   isClown: 0
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!54 &834649953
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1226,28 +1229,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1032406938}
   m_CullTransparentMesh: 1
---- !u!1 &1088062058 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5249436877091782676, guid: 94242cd236c0a3148a0afe5a941324de, type: 3}
-  m_PrefabInstance: {fileID: 1728021540}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1088062059
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1088062058}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1359fc3a26821e749abcd27b62d28e66, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  myTransform: {fileID: 0}
-  rigidbody: {fileID: 0}
-  normalCamera: {fileID: 0}
-  movementSpeed: 5
-  rotationSpeed: 10
 --- !u!4 &1088062063 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 517441175115109537, guid: 94242cd236c0a3148a0afe5a941324de, type: 3}
@@ -1381,6 +1362,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timerText: {fileID: 470826477}
+  startTime: 0
+  timeStopped: 0
 --- !u!1 &1161161105
 GameObject:
   m_ObjectHideFlags: 0
@@ -1975,12 +1958,7 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 5249436877091782676, guid: 94242cd236c0a3148a0afe5a941324de, type: 3}
-      propertyPath: m_TagString
-      value: Untagged
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7771091515258019171, guid: 94242cd236c0a3148a0afe5a941324de, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 94242cd236c0a3148a0afe5a941324de, type: 3}
 --- !u!1 &1787611794
 GameObject:
