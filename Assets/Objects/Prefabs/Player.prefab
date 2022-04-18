@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 6863804091679518312}
   - component: {fileID: 7000239508915685543}
   - component: {fileID: 4724225019871738519}
-  - component: {fileID: 7771091515258019171}
+  - component: {fileID: 1088062059}
+  - component: {fileID: 1422103226213796455}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -82,7 +83,7 @@ MonoBehaviour:
   moveAmount: 0
   mouseX: 0
   mouseY: 0
---- !u!114 &7771091515258019171
+--- !u!114 &1088062059
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -91,15 +92,30 @@ MonoBehaviour:
   m_GameObject: {fileID: 5249436877091782676}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 585226588f7bd2b41a2235743b4ca80b, type: 3}
+  m_Script: {fileID: 11500000, guid: 1359fc3a26821e749abcd27b62d28e66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   myTransform: {fileID: 0}
-  animatorHandler: {fileID: 0}
-  rigidbody: {fileID: 7000239508915685543}
+  rigidbody: {fileID: 0}
   normalCamera: {fileID: 0}
   movementSpeed: 5
   rotationSpeed: 10
+--- !u!114 &1422103226213796455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5249436877091782676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26f215805220d514c90c50acecf60225, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  myCanvas: {fileID: 0}
+  myTaskListHolder: {fileID: 0}
+  myTasks: []
+  playerState: 0
 --- !u!1001 &3132459711863351301
 PrefabInstance:
   m_ObjectHideFlags: 0
