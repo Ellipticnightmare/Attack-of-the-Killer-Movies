@@ -153,10 +153,8 @@ public class TaskManager : MonoBehaviour
             item.BuildMyTaskList();
         }
         yield return new WaitForEndOfFrame();
-        Time.timeScale = 1;
-        GameManager.togglePause();
-        yield return new WaitForEndOfFrame();
         UpdateWorld();
+        GameManager.togglePause();
     }
     static IEnumerator RedelegateTasks()
     {
