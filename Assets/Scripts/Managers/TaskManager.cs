@@ -6,17 +6,22 @@ using UnityEngine.UI;
 
 public class TaskManager : MonoBehaviour
 {
+    static List<TaskObject> allTaskObjects = new List<TaskObject>();
+    public TaskDatabase myTaskDatabase;
+    [HideInInspector]
     public List<Task> allTasks = new List<Task>();
     static List<Task> activeTasks = new List<Task>();
     static List<Task> completedTasks = new List<Task>();
     static List<TaskUI> SelectedTaskUIs = new List<TaskUI>();
     static List<taskController> activePlayers = new List<taskController>();
 
-    public Task testTask;//reference to inScene Canvas
     public GameObject taskObject; //reference to prefab that will show all task information
     public int maxDisplayTasks = 6;
     void Start()
     {
+        allTasks.AddRange(myTaskDatabase.allTasks);
+        TaskObject[] allObjects = FindObjectsOfType<TaskObject>();
+        allTaskObjects.AddRange(allObjects);
         CreatePlayerLists();
     }
     public static void PlayerDied() //called from GameManager when a player dies, unlocks all tasks
@@ -24,8 +29,7 @@ public class TaskManager : MonoBehaviour
                                     //thus preventing hard locks where players would be unable to re-do
                                     //a task
     {
-        TaskObject[] allObjects = FindObjectsOfType<TaskObject>();
-        foreach (var item in allObjects)
+        foreach (var item in allTaskObjects)
         {
             item.doesDiscriminateBetweenPlayers = false;
         }
@@ -87,6 +91,14 @@ public class TaskManager : MonoBehaviour
         }
         StartCoroutine(CreateTaskLists());
     }
+    public static void UpdateWorld()
+    {
+        foreach (var item in allTaskObjects)
+        {
+            if (!activeTasks.Contains(item.thisTask))
+                Destroy(item); //This can be changed to make the task objects static by changing to [item.enabled = false;]
+        }
+    }
     IEnumerator CreateTaskLists()
     {
         float rCheck = Random.Range(allTasks.Count / 3, allTasks.Count - 2);
@@ -144,6 +156,7 @@ public class TaskManager : MonoBehaviour
         Time.timeScale = 1;
         GameManager.togglePause();
         yield return new WaitForEndOfFrame();
+        UpdateWorld();
     }
     static IEnumerator RedelegateTasks()
     {
@@ -177,6 +190,7 @@ public class TaskManager : MonoBehaviour
         {
             item.BuildMyTaskList();
         }
+        UpdateWorld();
     }
 }
 #region Serialized Classes
