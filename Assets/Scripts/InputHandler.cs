@@ -12,11 +12,18 @@ public class InputHandler : MonoBehaviour
     public float mouseX;
     public float mouseY;
 
-    public PlayerControls inputActions;
-    CameraHandler cameraHandler;
-
-    Vector2 movementInput;
-    Vector2 cameraInput;
+        public bool isSwap;
+        Vector2 movementInput;
+        Vector2 cameraInput;
+    
+    public void OnEnable()
+        {
+            if (inputActions == null)
+            {
+                inputActions = new PlayerControls();
+                inputActions.PlayerMovement.Movement.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();
+                inputActions.PlayerMovement.Camera.performed += i => cameraInput = i.ReadValue<Vector2>();
+        }
 
     public void Start()
     {
@@ -34,7 +41,8 @@ public class InputHandler : MonoBehaviour
         }
         else
         {
-            Debug.Log("im null guys");
+            MoveInput(delta);
+            HandleSwap(delta);
         }
     }
 
@@ -48,7 +56,10 @@ public class InputHandler : MonoBehaviour
             
         }
 
-        inputActions.Enable();
+        private void HandleSwap(float delta)
+        {
+            inputActions.PlayerMovement.Swap.performed += ctx => isSwap = true;
+        }
     }
     private void OnDisable()
     {

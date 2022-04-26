@@ -2,8 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AKM
-{
+
     public class PlayerMovement : MonoBehaviour
     {
         Transform cameraObject;
@@ -85,4 +84,3 @@ namespace AKM
         }
         #endregion
     }
-}

@@ -46,9 +46,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Interaction"",
+                    ""name"": ""Swap"",
                     ""type"": ""Button"",
-                    ""id"": ""52afd5d7-7ec5-4b8b-b84f-b36036edb89a"",
+                    ""id"": ""08f69535-5563-4eae-aa86-40b0bcba69c8"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -124,23 +124,12 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""e570f662-6de2-43ae-a0ab-29ac3fd6123c"",
-                    ""path"": ""<Gamepad>/rightStick"",
-                    ""interactions"": """",
+                    ""id"": ""0fadedcb-8f90-4ca1-877a-c2982e5a1513"",
+                    ""path"": ""<Keyboard>/j"",
+                    ""interactions"": ""Press"",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Camera"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""982d64ae-d920-4845-b9b0-963c9e70f4ba"",
-                    ""path"": ""<Keyboard>/e"",
-                    ""interactions"": ""Hold"",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Interaction"",
+                    ""action"": ""Swap"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -153,7 +142,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_PlayerMovement = asset.FindActionMap("Player Movement", throwIfNotFound: true);
         m_PlayerMovement_Movement = m_PlayerMovement.FindAction("Movement", throwIfNotFound: true);
         m_PlayerMovement_Camera = m_PlayerMovement.FindAction("Camera", throwIfNotFound: true);
-        m_PlayerMovement_Interaction = m_PlayerMovement.FindAction("Interaction", throwIfNotFound: true);
+        m_PlayerMovement_Swap = m_PlayerMovement.FindAction("Swap", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -215,14 +204,14 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private IPlayerMovementActions m_PlayerMovementActionsCallbackInterface;
     private readonly InputAction m_PlayerMovement_Movement;
     private readonly InputAction m_PlayerMovement_Camera;
-    private readonly InputAction m_PlayerMovement_Interaction;
+    private readonly InputAction m_PlayerMovement_Swap;
     public struct PlayerMovementActions
     {
         private @PlayerControls m_Wrapper;
         public PlayerMovementActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
         public InputAction @Movement => m_Wrapper.m_PlayerMovement_Movement;
         public InputAction @Camera => m_Wrapper.m_PlayerMovement_Camera;
-        public InputAction @Interaction => m_Wrapper.m_PlayerMovement_Interaction;
+        public InputAction @Swap => m_Wrapper.m_PlayerMovement_Swap;
         public InputActionMap Get() { return m_Wrapper.m_PlayerMovement; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -238,9 +227,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Camera.started -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnCamera;
                 @Camera.performed -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnCamera;
                 @Camera.canceled -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnCamera;
-                @Interaction.started -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnInteraction;
-                @Interaction.performed -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnInteraction;
-                @Interaction.canceled -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnInteraction;
+                @Swap.started -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnSwap;
+                @Swap.performed -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnSwap;
+                @Swap.canceled -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnSwap;
             }
             m_Wrapper.m_PlayerMovementActionsCallbackInterface = instance;
             if (instance != null)
@@ -251,9 +240,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Camera.started += instance.OnCamera;
                 @Camera.performed += instance.OnCamera;
                 @Camera.canceled += instance.OnCamera;
-                @Interaction.started += instance.OnInteraction;
-                @Interaction.performed += instance.OnInteraction;
-                @Interaction.canceled += instance.OnInteraction;
+                @Swap.started += instance.OnSwap;
+                @Swap.performed += instance.OnSwap;
+                @Swap.canceled += instance.OnSwap;
             }
         }
     }
@@ -262,6 +251,6 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     {
         void OnMovement(InputAction.CallbackContext context);
         void OnCamera(InputAction.CallbackContext context);
-        void OnInteraction(InputAction.CallbackContext context);
+        void OnSwap(InputAction.CallbackContext context);
     }
 }

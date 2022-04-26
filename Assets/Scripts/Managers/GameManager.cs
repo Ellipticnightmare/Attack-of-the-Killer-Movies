@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         s_endGameScreenUI = endGameScreenUI;
-        Time.timeScale = 0;
+        tMod = 0;
         timeSpent = Time.time;
     }
     private void FixedUpdate()

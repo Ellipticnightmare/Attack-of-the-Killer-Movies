@@ -8,6 +8,13 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody))]
 public class MonsterController : MonoBehaviour
 {
+    public float viewRadius;
+    [Range(0, 360)]
+    public float viewAngle;
+    [Tooltip("This is ONLY the players")]
+    public LayerMask targetMask;
+    [Tooltip("This is everything BUT the players")]
+    public LayerMask obstacleMask;
     [Header("DISABLE THIS UNTIL ANIMATIONS")]
     public bool hasAnimations;
     NavMeshAgent agent;
@@ -25,13 +32,13 @@ public class MonsterController : MonoBehaviour
     public int revisitThreshold;
     public float walkRadius = 4f;
     public float moveSpeed, rotSpeed;
-    CameraHandler mainCamera;
     enemyState EnemyState = enemyState.Roam;
     [HideInInspector]
     public bool isClown;
     float clownTimer, trackTimer, stunTimer, attackCooldown, attackCooldownReal;
     Barrier targBar;
     public LayerMask layerMask;
+    public PlayerObject targPlayer;
     // Start is called before the first frame update
     void Start()
     {
@@ -40,7 +47,6 @@ public class MonsterController : MonoBehaviour
         agent = this.GetComponent<NavMeshAgent>();
         anim = this.GetComponent<Animator>();
         path = new NavMeshPath();
-        mainCamera = GameObject.FindGameObjectWithTag("MainCamera").GetComponentInParent<CameraHandler>();
         BuildNode();
     }
 
@@ -58,9 +64,9 @@ public class MonsterController : MonoBehaviour
             case enemyState.Roam:
                 if(hasAnimations)
                 anim.SetInteger("state", 0); //walk anim
-                if (canSeePlayer(mainCamera.targetTransform))
+                if (canSeePlayer())
                 {
-                    if (NavMesh.CalculatePath(transform.position, mainCamera.targetTransform.position, NavMesh.AllAreas, path))
+                    if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, path))
                     {
                         if (path.status == NavMeshPathStatus.PathComplete)
                         {
@@ -79,17 +85,17 @@ public class MonsterController : MonoBehaviour
                 if (trackTimer >= 0)
                 {
                     trackTimer -= Time.deltaTime;
-                    agent.SetDestination(mainCamera.transform.position);
+                    agent.SetDestination(targPlayer.transform.position);
                 }
                 else
                 {
-                    if (canSeePlayer(mainCamera.targetTransform))
+                    if (canSeePlayer())
                     {
-                        if (NavMesh.CalculatePath(transform.position, mainCamera.transform.position, NavMesh.AllAreas, path))
+                        if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, path))
                         {
                             if (path.status == NavMeshPathStatus.PathComplete)
                             {
-                                agent.SetDestination(mainCamera.transform.position);
+                                agent.SetDestination(targPlayer.transform.position);
                             }
                             else
                             {
@@ -154,13 +160,13 @@ public class MonsterController : MonoBehaviour
                                 BuildNode();
                                 break;
                             case enemyState.Chase:
-                                attack(mainCamera.targetTransform);
+                                attack(targPlayer.transform);
                                 break;
                             case enemyState.targetBarricades:
                                 hitBarricade();
                                 break;
                             case enemyState.Attack:
-                                attack(mainCamera.targetTransform);
+                                attack(targPlayer.transform);
                                 break;
                         }
                         attackCooldownReal = 0;
@@ -197,8 +203,8 @@ public class MonsterController : MonoBehaviour
         }
         if (isValidNewWebPoint)
         {
-            int genWeighting = (int)(100 - Vector3.Distance(newPoint, mainCamera.targetTransform.position));
             webNodePoint newNode = new webNodePoint();
+            int genWeighting = calculateWeighting(newNode.nodePoint);
             newNode.nodePoint = newPoint;
             newNode.weighting = (int)Mathf.Clamp(genWeighting, 0, 100);
             nodeWeb.Add(newNode);
@@ -247,11 +253,11 @@ public class MonsterController : MonoBehaviour
         int newI = 0;
         for (int i = 0; i < nodeWeb.Count; i++)
         {
-            if (Vector3.Distance(nodeWeb[i].nodePoint, mainCamera.targetTransform.position) < distance)
+            if (Vector3.Distance(nodeWeb[i].nodePoint, targPlayer.transform.position) < distance)
             {
                 x = nodeWeb[i];
                 newI = i;
-                distance = Vector3.Distance(nodeWeb[i].nodePoint, mainCamera.targetTransform.position);
+                distance = Vector3.Distance(nodeWeb[i].nodePoint, targPlayer.transform.position);
             }
         }
         x.weighting = 100;
@@ -261,7 +267,7 @@ public class MonsterController : MonoBehaviour
     void pingBarricade(bool fromPlayer)
     {
         float hitRange = fromPlayer ? 50 : 5;
-        Vector3 startPos = fromPlayer ? mainCamera.targetTransform.position : transform.position;
+        Vector3 startPos = fromPlayer ? targPlayer.transform.position : transform.position;
         int index = -1;
         Collider[] Barricades;
         Barricades = Physics.OverlapSphere(startPos, hitRange);
@@ -308,7 +314,7 @@ public class MonsterController : MonoBehaviour
     }
     public virtual void startHuntTrigger() //Can be manually triggered by Clown
     {
-        agent.SetDestination(mainCamera.targetTransform.position);
+        agent.SetDestination(targPlayer.transform.position);
         updateNodeWeight();
         EnemyState = enemyState.Chase;
     }
@@ -355,25 +361,57 @@ public class MonsterController : MonoBehaviour
             finalPosition = Vector3.zero;
         return finalPosition;
     }
-    bool canSeePlayer(Transform player)
+    bool canSeePlayer()
     {
         bool output = false;
-        RaycastHit hit;
+        List<PlayerObject> visibleTargets = new List<PlayerObject>();
+        visibleTargets.Clear();
         Vector3 fromPosition = this.transform.position;
-        Vector3 targetPosition = player.position;
-        Vector3 direction = targetPosition - fromPosition;
-        Vector3 posRelative = transform.InverseTransformPoint(player.position);
-        if(Physics.Raycast(this.transform.position, direction, out hit, layerMask) && posRelative.z > 0 )
+        Collider[] targetsInViewRadius = Physics.OverlapSphere(fromPosition, viewRadius, targetMask);
+        for (int i = 0; i < targetsInViewRadius.Length; i++)
         {
-            if (hit.collider.gameObject == player.gameObject)
-                output = true;
+            Transform target = targetsInViewRadius[i].transform;
+            Vector3 dirToTarget = (target.position - fromPosition).normalized;
+            if(Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2)
+            {
+                float dstToTarget = Vector3.Distance(fromPosition, target.position);
+                if(!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
+                {
+                    visibleTargets.Add(target.GetComponent<PlayerObject>());
+                }
+            }
+        }
+        if(visibleTargets.Count > 0)
+        {
+            output = true;
+            float minDist = Mathf.Infinity;
+            foreach (var item in visibleTargets)
+            {
+                if (Vector3.Distance(item.transform.position, fromPosition) < minDist)
+                {
+                    minDist = Vector3.Distance(item.transform.position, fromPosition);
+                    targPlayer = item;
+                }
+            }
         }
         
         Debug.Log(output);
 
         return output;
     }
-
+    int calculateWeighting(Vector3 pointPos)
+    {
+        int output = 0;
+        float minDist = Mathf.Infinity;
+        PlayerObject[] enemies = FindObjectsOfType<PlayerObject>();
+        foreach (var item in enemies)
+        {
+            if (Vector3.Distance(item.transform.position, pointPos) < minDist)
+                minDist = Vector3.Distance(item.transform.position, pointPos);
+        }
+        int genWeighting = (int)(100 - minDist);
+        return output;
+    }
     public enum enemyState
     {
         Stunned,

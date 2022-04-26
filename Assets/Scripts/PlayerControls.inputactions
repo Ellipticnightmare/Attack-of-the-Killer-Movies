@@ -24,9 +24,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Interaction",
+                    "name": "Swap",
                     "type": "Button",
-                    "id": "52afd5d7-7ec5-4b8b-b84f-b36036edb89a",
+                    "id": "08f69535-5563-4eae-aa86-40b0bcba69c8",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -102,23 +102,12 @@
                 },
                 {
                     "name": "",
-                    "id": "e570f662-6de2-43ae-a0ab-29ac3fd6123c",
-                    "path": "<Gamepad>/rightStick",
-                    "interactions": "",
+                    "id": "0fadedcb-8f90-4ca1-877a-c2982e5a1513",
+                    "path": "<Keyboard>/j",
+                    "interactions": "Press",
                     "processors": "",
                     "groups": "",
-                    "action": "Camera",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "982d64ae-d920-4845-b9b0-963c9e70f4ba",
-                    "path": "<Keyboard>/e",
-                    "interactions": "Hold",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Interaction",
+                    "action": "Swap",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
