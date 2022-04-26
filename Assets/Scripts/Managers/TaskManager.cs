@@ -210,10 +210,16 @@ public class taskController : MonoBehaviour
         }
         foreach (var item in myTaskChecks)
         {
-            TaskUI newTask = new TaskUI();
+            GameObject newTaskUIObj = Instantiate(newTaskObject, myTaskHolderList.transform);
+            TaskUI newTask = newTaskUIObj.GetComponent<TaskUI>();
             newTask.myTask = item;
             if (canTakeNewTask(newTask))
+            {
                 myTasks.Add(newTask);
+                myTaskObjects.Add(newTaskUIObj);
+            }
+            else
+                Destroy(newTaskUIObj);
         }
         myTaskChecks = myTaskChecks.Distinct().ToList();
         myTasks = myTasks.Distinct().ToList();
@@ -229,15 +235,13 @@ public class taskController : MonoBehaviour
         {
             if (canTakeNewTask(data))
             {
-                GameObject newTaskUIObj = Instantiate(newTaskObject, myTaskHolderList.transform);
-                TaskUI newVals = newTaskUIObj.GetComponent<TaskUI>();
+                TaskUI newVals = data;
                 newVals.taskTitle = data.taskTitle;
                 newVals.taskDescription = data.taskDescription;
                 newVals.numberCompleted = data.numberCompleted;
                 newVals.taskNumberCompleted = data.taskNumberCompleted;
                 newVals.taskNumToCompletion = data.taskNumToCompletion;
                 newVals.myPlayer = myPlayer;
-                myTaskObjects.Add(newTaskUIObj);
             }
         }
         myPlayer.myTasks = myTasks;
