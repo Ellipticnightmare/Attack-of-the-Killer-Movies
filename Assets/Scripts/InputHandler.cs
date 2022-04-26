@@ -12,18 +12,23 @@ public class InputHandler : MonoBehaviour
     public float mouseX;
     public float mouseY;
 
-        public bool isSwap;
-        Vector2 movementInput;
-        Vector2 cameraInput;
-    
+    public bool isSwap;
+    Vector2 movementInput;
+    Vector2 cameraInput;
+
+    PlayerControls inputActions;
+    CameraHandler cameraHandler;
+
     public void OnEnable()
+    {
+        if (inputActions == null)
         {
-            if (inputActions == null)
-            {
-                inputActions = new PlayerControls();
-                inputActions.PlayerMovement.Movement.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();
-                inputActions.PlayerMovement.Camera.performed += i => cameraInput = i.ReadValue<Vector2>();
+            inputActions = new PlayerControls();
+            inputActions.PlayerMovement.Movement.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();
+            inputActions.PlayerMovement.Camera.performed += i => cameraInput = i.ReadValue<Vector2>();
         }
+        inputActions.Enable();
+    }
 
     public void Start()
     {
@@ -46,21 +51,6 @@ public class InputHandler : MonoBehaviour
         }
     }
 
-    public void OnEnable()
-    {
-        if (inputActions == null)
-        {
-            inputActions = new PlayerControls();
-            inputActions.PlayerMovement.Movement.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();
-            inputActions.PlayerMovement.Camera.performed += i => cameraInput = i.ReadValue<Vector2>();
-            
-        }
-
-        private void HandleSwap(float delta)
-        {
-            inputActions.PlayerMovement.Swap.performed += ctx => isSwap = true;
-        }
-    }
     private void OnDisable()
     {
         inputActions.Disable();
@@ -78,6 +68,10 @@ public class InputHandler : MonoBehaviour
         mouseX = cameraInput.x;
         mouseY = cameraInput.y;
     }
-
+    
+    private void HandleSwap(float delta)
+        {
+            inputActions.PlayerMovement.Swap.performed += ctx => isSwap = true;
+        }
 
 }
