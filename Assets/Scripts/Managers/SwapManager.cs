@@ -25,6 +25,10 @@ public class SwapManager : MonoBehaviour
         if (Actor == null && possibleActors.Count >= 1)
             Actor = possibleActors[0];
     }
+    private void Start()
+    {
+        mainCam.SetActive(false);
+    }
     public void SwapTo()
     {
         Actor.enableControl();

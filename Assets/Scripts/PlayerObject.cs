@@ -95,7 +95,7 @@ public class PlayerObject : MonoBehaviour
     float movementSpeed = 5;
     [SerializeField]
     float rotationSpeed = 10;
-    private void Start()
+    private void Awake()
     {
         rigidbody = GetComponent<Rigidbody>();
         cameraObject = GameObject.FindGameObjectWithTag("MainCamera").GetComponentInChildren<Camera>().transform;
