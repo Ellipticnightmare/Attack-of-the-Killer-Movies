@@ -46,11 +46,15 @@ public class PlayerSwap : MonoBehaviour
     {
         player = possiblePlayers[whichPlayer];
         player.GetComponent<PlayerMovement>().enabled = true;
+        player.GetComponent<InputHandler>().enabled = true;
+        player.Find("Camera Holder").transform.gameObject.SetActive(true);
         for (int i = 0; i < possiblePlayers.Count; i++)
         {
             if(possiblePlayers[i] != player)
             {
                 possiblePlayers[i].GetComponent<PlayerMovement>().enabled = false;
+                possiblePlayers[i].Find("Camera Holder").transform.gameObject.SetActive(false);
+                possiblePlayers[i].GetComponent<InputHandler>().enabled = false;
             }
         }
         inputHandler.isSwap = false;
