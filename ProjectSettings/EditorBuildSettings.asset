@@ -6,10 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/MainMenu.unity
-    guid: 15cfdcb7b68905c419f5ea6dc93523ca
-  - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 9fc0d4010bbf28b4594072e72b8655ab
+    path: Assets/Scenes/HeinNavMeshTesting.unity
+    guid: 0fabea66e56053849b8742d9401a48c9
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: 411f201e9c1e1e745911ae565db0141d, type: 2}
