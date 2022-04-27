@@ -67,11 +67,12 @@ public class PlayerObject : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         CameraHandler.singleton.targetTransform = this.transform;
+        SwapManager.singleton.ToggleCam();
         UpdateMyUI();
     }
     public void disableControl()
     {
-        CameraHandler.singleton.JumpToTop();
+        SwapManager.singleton.ToggleCam();
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Confined;
         isFocus = false;
