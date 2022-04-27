@@ -93,11 +93,11 @@ public class TaskManager : MonoBehaviour
     }
     public static void UpdateWorld()
     {
-        foreach (var item in allTaskObjects)
+        /*foreach (var item in allTaskObjects)
         {
-            if (!activeTasks.Contains(item.thisTask))
+            if (activeTasks.Contains(item.thisTask))
                 Destroy(item); //This can be changed to make the task objects static by changing to [item.enabled = false;]
-        }
+        }*/
         SwapManager.singleton.SwapTo();
     }
     IEnumerator CreateTaskLists()

@@ -9,13 +9,7 @@ public class TaskObject : MonoBehaviour
     List<PlayerObject> hasInteracted = new List<PlayerObject>();
     public Task thisTask;
     float startTime = 0f;
-    TaskUI curHeldTask;
-    PlayerControls inputActions;
-
-    private void Start()
-    {
-
-    }
+    public TaskUI curHeldTask;
     public void RunInteract(PlayerObject newInteractor)
     {
         bool canIInteract = true;
@@ -47,6 +41,7 @@ public class TaskObject : MonoBehaviour
             RunInteract(other.GetComponent<PlayerObject>());
             foreach(var obj in other.GetComponent<PlayerObject>().myTasks)
             {
+                Debug.Log(obj.taskTitle);
                 if (obj.myTask == thisTask)
                     curHeldTask = obj;
             }

@@ -17,7 +17,7 @@ public class SwapManager : MonoBehaviour
     public List<Button> mapButtons = new List<Button>();
     public GameObject swapUI;
     #endregion
-    private void Start()
+    private void Awake()
     {
         singleton = this;
         possibleActors.AddRange(FindObjectsOfType<PlayerObject>());
@@ -27,6 +27,7 @@ public class SwapManager : MonoBehaviour
     public void SwapTo()
     {
         Actor.enableControl();
+        swapUI.SetActive(false);
         Actor = null;
     }
     public void StartSwap(PlayerObject oldActor)
@@ -37,12 +38,13 @@ public class SwapManager : MonoBehaviour
             mapButtons.Remove(mapButtons[mapButtons.Count - 1]);
         for (int i = 0; i < possibleActors.Count; i++)
         {
+            int x = i;
+            mapButtons[i].onClick.AddListener(delegate { SetNewTargetActor(x); });
             mapButtons[i].GetComponent<Image>().sprite = possibleActors[i].actorFace;
             mapButtons[i].transform.position = RectTransformUtility.WorldToScreenPoint(Camera.main, possibleActors[i].transform.position);
-            mapButtons[i].onClick.AddListener(delegate { SetNewTargetActor(possibleActors[i]); });
         }
     }
-    public void SetNewTargetActor(PlayerObject newActor) => Actor = newActor;
+    public void SetNewTargetActor(int i) => Actor = possibleActors[i];
     public void ConfirmSwapActor() => SwapTo(); //Set this in scene as a Confirm Selection button
     public void RejectSwapActor() => Actor = null;
     private void Update()

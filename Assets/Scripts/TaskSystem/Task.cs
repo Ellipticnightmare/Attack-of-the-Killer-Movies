@@ -6,7 +6,6 @@ using UnityEngine;
 public class Task : ScriptableObject
 {
     public GoalType goalType = GoalType.Interact;
-    public bool isActive;
 
     public string title;
     public string description;

@@ -65,6 +65,7 @@ public class PlayerObject : MonoBehaviour
         isFocus = true;
         myCanvas.SetActive(true);
         Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
         CameraHandler.singleton.targetTransform = this.transform;
         UpdateMyUI();
     }
@@ -72,6 +73,7 @@ public class PlayerObject : MonoBehaviour
     {
         CameraHandler.singleton.JumpToTop();
         Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.Confined;
         isFocus = false;
         myCanvas.SetActive(false);
     }

@@ -42,7 +42,6 @@ public class CameraHandler : MonoBehaviour
 
       public void FollowTarget (float delta)
       {
-        Debug.Log("I should be working");
         Vector3 targetPosition = Vector3.SmoothDamp(myTransform.position, targetTransform.position, ref cameraFollowVelocity, delta / followSpeed);
         myTransform.position = targetPosition;
 
