@@ -65,10 +65,12 @@ public class PlayerObject : MonoBehaviour
         isFocus = true;
         myCanvas.SetActive(true);
         Cursor.visible = false;
+        CameraHandler.singleton.targetTransform = this.transform;
         UpdateMyUI();
     }
     public void disableControl()
     {
+        CameraHandler.singleton.JumpToTop();
         Cursor.visible = true;
         isFocus = false;
         myCanvas.SetActive(false);

@@ -16,7 +16,6 @@ public class SwapManager : MonoBehaviour
     public RawImage liveView;
     public List<Button> mapButtons = new List<Button>();
     public GameObject swapUI;
-    public Camera mapRenderCam;
     #endregion
     private void Start()
     {
@@ -39,7 +38,7 @@ public class SwapManager : MonoBehaviour
         for (int i = 0; i < possibleActors.Count; i++)
         {
             mapButtons[i].GetComponent<Image>().sprite = possibleActors[i].actorFace;
-            mapButtons[i].transform.position = RectTransformUtility.WorldToScreenPoint(mapRenderCam, possibleActors[i].transform.position);
+            mapButtons[i].transform.position = RectTransformUtility.WorldToScreenPoint(Camera.main, possibleActors[i].transform.position);
             mapButtons[i].onClick.AddListener(delegate { SetNewTargetActor(possibleActors[i]); });
         }
     }
