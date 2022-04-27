@@ -14,6 +14,7 @@ using UnityEngine;
         PlayerControls inputActions;
 
         public bool isSwap;
+        public bool mapIsOpen = false;
         Vector2 movementInput;
         Vector2 cameraInput;
     
@@ -53,4 +54,10 @@ using UnityEngine;
         {
             inputActions.PlayerMovement.Swap.performed += ctx => isSwap = true;
         }
-    }
+
+        private void HandleMap(float delta)
+        {
+        inputActions.PlayerMovement.Map.performed += ctx => mapIsOpen = true;
+
+        }
+}
