@@ -12,61 +12,46 @@ public class PlayerObject : MonoBehaviour
     public List<GameObject> myTaskObjects = new List<GameObject>();
     public GameObject myCanvas, myTaskListHolder;
     public GameObject newTaskObject;
+    public void gainedTask(Task newTask)
+    {
+        myTaskChecks.Add(newTask);
+    }
     public void BuildMyTaskList()
     {
-        foreach (var obj in myTaskObjects)
-        {
-            Destroy(obj);
-        }
-        foreach (var item in myTaskChecks)
+        myTaskChecks = myTaskChecks.Distinct().ToList();
+        foreach (var item in myTaskChecks.ToList())
         {
             GameObject newTaskUIObj = Instantiate(newTaskObject, myTaskListHolder.transform);
             TaskUI newTask = newTaskUIObj.GetComponent<TaskUI>();
             newTask.myTask = item;
-            if (canTakeNewTask(newTask))
-            {
-                myTasks.Add(newTask);
-                myTaskObjects.Add(newTaskUIObj);
-            }
-            else
-                Destroy(newTaskUIObj);
+            myTasks.Add(newTask);
+            myTaskObjects.Add(newTaskUIObj);
         }
-        myTaskChecks = myTaskChecks.Distinct().ToList();
         myTasks = myTasks.Distinct().ToList();
         UpdateMyUI();
     }
     public void UpdateMyUI()
     {
+        List<TaskUI> newMyTasks = new List<TaskUI>();
         foreach (var obj in myTaskObjects)
         {
             Destroy(obj);
         }
         foreach (var data in myTasks)
         {
-            if (canTakeNewTask(data))
-            {
-                TaskUI newVals = data;
-                newVals.taskTitle = data.taskTitle;
-                newVals.taskDescription = data.taskDescription;
-                newVals.numberCompleted = data.numberCompleted;
-                newVals.taskNumberCompleted = data.taskNumberCompleted;
-                newVals.taskNumToCompletion = data.taskNumToCompletion;
-                newVals.myPlayer = this;
-            }
+            GameObject newTaskUIObj = Instantiate(newTaskObject, myTaskListHolder.transform);
+            TaskUI newVals = newTaskUIObj.GetComponent<TaskUI>();
+            newVals.numberCompleted = data.numberCompleted;
+            newVals.myPlayer = this;
+            newVals.myTask = data.myTask;
+            myTaskObjects.Add(newTaskUIObj);
+            newMyTasks.Add(newVals);
         }
+        myTasks = newMyTasks;
         foreach (var item in myTasks)
         {
             item.GenerateTaskUI();
         }
-    }
-    public bool canTakeNewTask(TaskUI newTask)
-    {
-        bool output = (!myTaskChecks.Contains(newTask.myTask));
-        if (!output)
-        {
-            myTaskChecks.Remove(newTask.myTask);
-        }
-        return output;
     }
     #endregion
     #region playerSwitching
@@ -79,10 +64,12 @@ public class PlayerObject : MonoBehaviour
     {
         isFocus = true;
         myCanvas.SetActive(true);
+        Cursor.visible = false;
         UpdateMyUI();
     }
     public void disableControl()
     {
+        Cursor.visible = true;
         isFocus = false;
         myCanvas.SetActive(false);
     }
@@ -121,6 +108,7 @@ public class PlayerObject : MonoBehaviour
             moveDirection = cameraObject.forward * vertical;
             moveDirection += cameraObject.right * horizontal;
             moveDirection.Normalize();
+            moveDirection.y = 0;
 
             float speed = movementSpeed;
             moveDirection *= speed;
@@ -145,7 +133,7 @@ public class PlayerObject : MonoBehaviour
 
     private void OnEnable()
     {
-        if(inputActions == null)
+        if (inputActions == null)
         {
             inputActions = new PlayerControls();
             inputActions.PlayerMovement.Movement.performed += inputActions => movementInput = inputActions.ReadValue<Vector2>();

@@ -24,12 +24,11 @@ public class SwapManager : MonoBehaviour
         possibleActors.AddRange(FindObjectsOfType<PlayerObject>());
         if (Actor == null && possibleActors.Count >= 1)
             Actor = possibleActors[0];
-        SwapTo();
-        Actor = null;
     }
-    void SwapTo()
+    public void SwapTo()
     {
         Actor.enableControl();
+        Actor = null;
     }
     public void StartSwap(PlayerObject oldActor)
     {

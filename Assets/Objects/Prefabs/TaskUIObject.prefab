@@ -114,10 +114,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myTask: {fileID: 0}
-  taskTitle: {fileID: 0}
-  taskDescription: {fileID: 0}
-  taskNumToCompletion: {fileID: 0}
-  taskNumberCompleted: {fileID: 0}
+  taskTitle: {fileID: 1291361702752456970}
+  taskDescription: {fileID: 5758620379676814420}
+  taskNumToCompletion: {fileID: 4972350289534551677}
+  taskNumberCompleted: {fileID: 7731185718787892803}
   numberCompleted: 0
   myPlayer: {fileID: 0}
 --- !u!1 &4670047485227938821

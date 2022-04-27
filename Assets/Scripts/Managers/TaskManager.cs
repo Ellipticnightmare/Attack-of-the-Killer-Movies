@@ -13,6 +13,7 @@ public class TaskManager : MonoBehaviour
     static List<Task> activeTasks = new List<Task>();
     static List<Task> completedTasks = new List<Task>();
     static List<TaskUI> SelectedTaskUIs = new List<TaskUI>();
+    public List<PlayerObject> ns_activePlayers = new List<PlayerObject>();
     static List<PlayerObject> activePlayers = new List<PlayerObject>();
 
     public GameObject taskObject; //reference to prefab that will show all task information
@@ -85,8 +86,9 @@ public class TaskManager : MonoBehaviour
         {
             PlayerObject newController = item.GetComponent<PlayerObject>();
             newController.newTaskObject = taskObject;
-            activePlayers.Add(newController);
+            ns_activePlayers.Add(newController);
         }
+        activePlayers = ns_activePlayers;
         StartCoroutine(CreateTaskLists());
     }
     public static void UpdateWorld()
@@ -96,11 +98,13 @@ public class TaskManager : MonoBehaviour
             if (!activeTasks.Contains(item.thisTask))
                 Destroy(item); //This can be changed to make the task objects static by changing to [item.enabled = false;]
         }
+        SwapManager.singleton.SwapTo();
     }
     IEnumerator CreateTaskLists()
     {
         float rCheck = Random.Range(allTasks.Count / 3, allTasks.Count - 2);
         rCheck = (int)(rCheck / 4);
+        rCheck = rCheck * 4;
         allTasks = allTasks.OrderBy(x => Random.value).ToList();
         for (int i = 0; i < rCheck; i++)
         {
@@ -111,7 +115,7 @@ public class TaskManager : MonoBehaviour
         List<Task> masterB = new List<Task>();
         for (int i = 0; i < activeTasks.Count; i++)
         {
-            if (i % 2 == 0)
+            if (i % 2 == 0 || i == 0)
                 masterB.Add(activeTasks[i]);
             else
                 masterA.Add(activeTasks[i]);
@@ -131,20 +135,21 @@ public class TaskManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
         for (int i = 0; i < masterA.Count; i++)
         {
-            if (i % 2 == 0)
-                activePlayers[0].myTaskChecks.Add(masterA[i]);
+            if (i % 2 == 0 || i == 0)
+                activePlayers[0].gainedTask(masterA[i]);
             else
-                activePlayers[1].myTaskChecks.Add(masterA[i]);
+                activePlayers[1].gainedTask(masterA[i]);
         }
         for (int i = 0; i < masterB.Count; i++)
         {
-            if (i % 2 == 0)
+            if (i % 2 == 0 || i == 0)
             {
-                activePlayers[2].myTaskChecks.Add(masterB[i]);
+                activePlayers[2].gainedTask(masterB[i]);
             }
             else
-                activePlayers[3].myTaskChecks.Add(masterB[i]);
+                activePlayers[3].gainedTask(masterB[i]);
         }
+        yield return new WaitForSeconds(1);
         yield return new WaitForEndOfFrame();
         foreach (var item in activePlayers)
         {
