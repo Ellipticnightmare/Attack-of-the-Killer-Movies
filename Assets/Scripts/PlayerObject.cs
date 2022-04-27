@@ -67,12 +67,14 @@ public class PlayerObject : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         CameraHandler.singleton.targetTransform = this.transform;
-        SwapManager.singleton.ToggleCam();
+        SwapManager.singleton.mainCam.SetActive(true);
+        SwapManager.singleton.topCam.SetActive(false);
         UpdateMyUI();
     }
     public void disableControl()
     {
-        SwapManager.singleton.ToggleCam();
+        SwapManager.singleton.mainCam.SetActive(false);
+        SwapManager.singleton.topCam.SetActive(true);
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Confined;
         isFocus = false;
@@ -95,7 +97,7 @@ public class PlayerObject : MonoBehaviour
     float movementSpeed = 5;
     [SerializeField]
     float rotationSpeed = 10;
-    private void Start()
+    private void Awake()
     {
         rigidbody = GetComponent<Rigidbody>();
         cameraObject = GameObject.FindGameObjectWithTag("MainCamera").GetComponentInChildren<Camera>().transform;

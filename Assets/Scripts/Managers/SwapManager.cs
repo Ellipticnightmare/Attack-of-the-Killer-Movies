@@ -25,6 +25,10 @@ public class SwapManager : MonoBehaviour
         if (Actor == null && possibleActors.Count >= 1)
             Actor = possibleActors[0];
     }
+    private void Start()
+    {
+        mainCam.SetActive(false);
+    }
     public void SwapTo()
     {
         Actor.enableControl();
@@ -50,11 +54,6 @@ public class SwapManager : MonoBehaviour
     public void SetNewTargetActor(int i) => Actor = possibleActors[i];
     public void ConfirmSwapActor() => SwapTo(); //Set this in scene as a Confirm Selection button
     public void RejectSwapActor() => Actor = null;
-    public void ToggleCam()
-    {
-        mainCam.SetActive(!mainCam.activeInHierarchy);
-        topCam.SetActive(!topCam.activeInHierarchy);
-    }
     private void Update()
     {
         if(Actor != null)
