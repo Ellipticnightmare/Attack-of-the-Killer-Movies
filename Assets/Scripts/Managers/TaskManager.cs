@@ -13,7 +13,7 @@ public class TaskManager : MonoBehaviour
     static List<Task> activeTasks = new List<Task>();
     static List<Task> completedTasks = new List<Task>();
     static List<TaskUI> SelectedTaskUIs = new List<TaskUI>();
-    static List<taskController> activePlayers = new List<taskController>();
+    static List<PlayerObject> activePlayers = new List<PlayerObject>();
 
     public GameObject taskObject; //reference to prefab that will show all task information
     public int maxDisplayTasks = 6;
@@ -44,7 +44,7 @@ public class TaskManager : MonoBehaviour
     {
         foreach (var obj in activePlayers)
         {
-            if (obj.myPlayer == goal.myPlayer)
+            if (obj == goal.myPlayer)
             {
                 foreach (var item in obj.myTasks)
                 {
@@ -83,9 +83,7 @@ public class TaskManager : MonoBehaviour
         PlayerObject[] players = FindObjectsOfType<PlayerObject>();
         foreach (var item in players)
         {
-            taskController newController = new taskController();
-            newController.myPlayer = item;
-            newController.myTaskHolderList = item.myTaskListHolder;
+            PlayerObject newController = item.GetComponent<PlayerObject>();
             newController.newTaskObject = taskObject;
             activePlayers.Add(newController);
         }
@@ -161,10 +159,10 @@ public class TaskManager : MonoBehaviour
         List<PlayerObject> curLivingPlayers = new List<PlayerObject>();
         curLivingPlayers.AddRange(FindObjectsOfType<PlayerObject>());
         yield return new WaitForEndOfFrame();
-        taskController diedPlayer = new taskController();
+        PlayerObject diedPlayer = null;
         foreach (var item in activePlayers)
         {
-            if (!curLivingPlayers.Contains(item.myPlayer))
+            if (!curLivingPlayers.Contains(item))
                 diedPlayer = item;
         }
         yield return new WaitForEndOfFrame();
@@ -191,75 +189,3 @@ public class TaskManager : MonoBehaviour
         UpdateWorld();
     }
 }
-//this is a smol change
-#region Serialized Classes
-[System.Serializable]
-public class taskController : MonoBehaviour
-{
-    public List<Task> myTaskChecks = new List<Task>();
-    public List<TaskUI> myTasks = new List<TaskUI>();
-    public List<GameObject> myTaskObjects = new List<GameObject>();
-    public PlayerObject myPlayer;
-    public GameObject myTaskHolderList;
-    public GameObject newTaskObject;
-    public void BuildMyTaskList()
-    {
-        foreach (var obj in myTaskObjects)
-        {
-            Destroy(obj);
-        }
-        foreach (var item in myTaskChecks)
-        {
-            GameObject newTaskUIObj = Instantiate(newTaskObject, myTaskHolderList.transform);
-            TaskUI newTask = newTaskUIObj.GetComponent<TaskUI>();
-            newTask.myTask = item;
-            if (canTakeNewTask(newTask))
-            {
-                myTasks.Add(newTask);
-                myTaskObjects.Add(newTaskUIObj);
-            }
-            else
-                Destroy(newTaskUIObj);
-        }
-        myTaskChecks = myTaskChecks.Distinct().ToList();
-        myTasks = myTasks.Distinct().ToList();
-        UpdateMyUI();
-    }
-    public void UpdateMyUI()
-    {
-        foreach (var obj in myTaskObjects)
-        {
-            Destroy(obj);
-        }
-        foreach (var data in myTasks)
-        {
-            if (canTakeNewTask(data))
-            {
-                TaskUI newVals = data;
-                newVals.taskTitle = data.taskTitle;
-                newVals.taskDescription = data.taskDescription;
-                newVals.numberCompleted = data.numberCompleted;
-                newVals.taskNumberCompleted = data.taskNumberCompleted;
-                newVals.taskNumToCompletion = data.taskNumToCompletion;
-                newVals.myPlayer = myPlayer;
-            }
-        }
-        myPlayer.myTasks = myTasks;
-        foreach (var item in myTasks)
-        {
-            item.GenerateTaskUI();
-        }
-    }
-    public bool canTakeNewTask(TaskUI newTask)
-    {
-        bool output = (!myTaskChecks.Contains(newTask.myTask));
-        if (!output)
-        {
-            myTaskChecks.Remove(newTask.myTask);
-        }
-        return output;
-    }
-}
-
-
-#endregion
