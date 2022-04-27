@@ -53,6 +53,15 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Button"",
+                    ""id"": ""701601b0-e7c0-450f-90c9-61c41225fa8a"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -132,6 +141,17 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""action"": ""Swap"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8e43736e-a604-4c5d-a38c-bf305b66b2c5"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": ""Hold"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -143,6 +163,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_PlayerMovement_Movement = m_PlayerMovement.FindAction("Movement", throwIfNotFound: true);
         m_PlayerMovement_Camera = m_PlayerMovement.FindAction("Camera", throwIfNotFound: true);
         m_PlayerMovement_Swap = m_PlayerMovement.FindAction("Swap", throwIfNotFound: true);
+        m_PlayerMovement_Interact = m_PlayerMovement.FindAction("Interact", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -205,6 +226,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
     private readonly InputAction m_PlayerMovement_Movement;
     private readonly InputAction m_PlayerMovement_Camera;
     private readonly InputAction m_PlayerMovement_Swap;
+    private readonly InputAction m_PlayerMovement_Interact;
     public struct PlayerMovementActions
     {
         private @PlayerControls m_Wrapper;
@@ -212,6 +234,7 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         public InputAction @Movement => m_Wrapper.m_PlayerMovement_Movement;
         public InputAction @Camera => m_Wrapper.m_PlayerMovement_Camera;
         public InputAction @Swap => m_Wrapper.m_PlayerMovement_Swap;
+        public InputAction @Interact => m_Wrapper.m_PlayerMovement_Interact;
         public InputActionMap Get() { return m_Wrapper.m_PlayerMovement; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -230,6 +253,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Swap.started -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnSwap;
                 @Swap.performed -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnSwap;
                 @Swap.canceled -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnSwap;
+                @Interact.started -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnInteract;
+                @Interact.performed -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnInteract;
+                @Interact.canceled -= m_Wrapper.m_PlayerMovementActionsCallbackInterface.OnInteract;
             }
             m_Wrapper.m_PlayerMovementActionsCallbackInterface = instance;
             if (instance != null)
@@ -243,6 +269,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                 @Swap.started += instance.OnSwap;
                 @Swap.performed += instance.OnSwap;
                 @Swap.canceled += instance.OnSwap;
+                @Interact.started += instance.OnInteract;
+                @Interact.performed += instance.OnInteract;
+                @Interact.canceled += instance.OnInteract;
             }
         }
     }
@@ -252,5 +281,6 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnMovement(InputAction.CallbackContext context);
         void OnCamera(InputAction.CallbackContext context);
         void OnSwap(InputAction.CallbackContext context);
+        void OnInteract(InputAction.CallbackContext context);
     }
 }

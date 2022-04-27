@@ -130,7 +130,7 @@ public class PlayerObject : MonoBehaviour
     public float horizontal, vertical, moveAmount, mouseX, mouseY;
     Vector2 movementInput;
     Vector2 cameraInput;
-    PlayerControls inputActions;
+    public PlayerControls inputActions;
     CameraHandler cameraHandler;
 
     private void OnEnable()
