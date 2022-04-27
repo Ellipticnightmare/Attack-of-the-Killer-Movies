@@ -35,6 +35,8 @@ public class SwapManager : MonoBehaviour
     {
         oldActor.disableControl();
         swapUI.SetActive(true);
+        possibleActors.Clear();
+        possibleActors.AddRange(FindObjectsOfType<PlayerObject>());
         while (mapButtons.Count > possibleActors.Count)
             mapButtons.Remove(mapButtons[mapButtons.Count - 1]);
         for (int i = 0; i < possibleActors.Count; i++)
