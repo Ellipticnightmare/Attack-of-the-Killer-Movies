@@ -125,6 +125,7 @@ public class Jericho : MonoBehaviour
     public virtual void attack(PlayerObject player) //For damage logic and unique effects
     {
         MyAIManager.EnemyState = aiManager.enemyState.Attack;
+        player.takeDamage();
     }
     public virtual void hitBarricade() //Doesn't get run by Dracula or Blob
     {

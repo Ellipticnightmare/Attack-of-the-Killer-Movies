@@ -131,6 +131,21 @@ public class PlayerObject : MonoBehaviour
             inputActions.PlayerMovement.Swap.performed += ctx => SwapManager.singleton.StartSwap(this);
         }
     }
+    public void takeDamage()
+    {
+        switch (playerState)
+        {
+            case PlayerState.Healthy:
+                playerState = PlayerState.Injured;
+                break;
+            case PlayerState.Injured:
+                playerState = PlayerState.Crippled;
+                break;
+            case PlayerState.Crippled:
+                GameManager.instance.PlayerDied(this);
+                break;
+        }
+    }
     #region InputHandling
     public float horizontal, vertical, moveAmount, mouseX, mouseY;
     Vector2 movementInput;
@@ -200,8 +215,7 @@ public class PlayerObject : MonoBehaviour
     {
         Healthy,
         Injured,
-        Crippled,
-        Dead
+        Crippled
     };
     #endregion
 }

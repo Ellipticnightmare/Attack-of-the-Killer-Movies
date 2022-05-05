@@ -6,16 +6,18 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance;
     public Text timerText;
-    static float timeSpent;
+    float timeSpent;
     public static float tMod;
     static bool isPaused = true;
     string minutes, seconds;
     public Color timerPauseColor, timerRunColor;
     public GameObject endGameScreenUI;
-    static GameObject s_endGameScreenUI;
+    GameObject s_endGameScreenUI;
     private void Awake()
     {
+        instance = this;
         s_endGameScreenUI = endGameScreenUI;
         tMod = 0;
         timeSpent = Time.time;
@@ -32,16 +34,16 @@ public class GameManager : MonoBehaviour
     public void ReturnToMainMenu() => SceneManager.LoadScene("MainMenu");
     public void ReloadScene() => SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     public void QuitGame() => Application.Quit();
-    public static void FinishedGame()
+    public void FinishedGame()
     {
         if (PlayerPrefs.GetFloat("timeScore") >= timeSpent)
             PlayerPrefs.SetFloat("timeScore", timeSpent);
         tMod = 0;
         s_endGameScreenUI.SetActive(true);
     }
-    public static void PlayerDied()
+    public void PlayerDied(PlayerObject player)
     {
-        TaskManager.PlayerDied();
+        TaskManager.instance.PlayerDied(player);
     }
     public static void togglePause()
     {

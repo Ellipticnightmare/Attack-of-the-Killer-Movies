@@ -37,7 +37,8 @@ public class SwapManager : MonoBehaviour
     }
     public void StartSwap(PlayerObject oldActor)
     {
-        oldActor.disableControl();
+        if(oldActor.gameObject.activeInHierarchy)
+            oldActor.disableControl();
         swapUI.SetActive(true);
         possibleActors.Clear();
         possibleActors.AddRange(FindObjectsOfType<PlayerObject>());
@@ -70,9 +71,6 @@ public class SwapManager : MonoBehaviour
                     break;
                 case PlayerObject.PlayerState.Crippled:
                     healthIndicator.sprite = healthTiers[2];
-                    break;
-                case PlayerObject.PlayerState.Dead:
-                    healthIndicator.sprite = healthTiers[3];
                     break;
             }
         }

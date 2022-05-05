@@ -8,9 +8,12 @@ public class MonsterController : Jericho
     public enemy Enemy = enemy.Clown;
     [HideInInspector]
     public float clownTimer;
+    public float specialEventTimerSet = 30;
+    float specialEventTimer;
     // Start is called before the first frame update
     void Start()
     {
+        specialEventTimer = specialEventTimerSet;
         trackTimer = 2;
         attackCooldown = 1;
         MyNavMeshManager.agent = this.GetComponent<NavMeshAgent>();
@@ -23,6 +26,16 @@ public class MonsterController : Jericho
     // Update is called once per frame
     void Update()
     {
+        if(specialEventTimer >= 0 && specialEventTimerSet > 0)
+            specialEventTimer--;
+        else
+        {
+            if (specialEventTimerSet > 0)
+            {
+                specialEventTimer = specialEventTimerSet;
+                EnemyManager.instance.triggerUniqueSpawn(this);
+            }
+        }
         MyNavMeshManager.maximumWebSize = Mathf.Clamp(MyNavMeshManager.maximumWebSize, 7, 15);
         MyNavMeshManager.revisitThreshold = Mathf.Clamp(MyNavMeshManager.revisitThreshold, 69, 91);
         MyNavMeshManager.agent.speed = MyAIManager.moveSpeed;
