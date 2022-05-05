@@ -349,7 +349,7 @@ public class MonsterController : Jericho
             if(Vector3.Angle(transform.forward, dirToTarget) < viewAngle / 2)
             {
                 float dstToTarget = Vector3.Distance(fromPosition, target.position);
-                if(!Physics.Raycast(transform.position, dirToTarget, dstToTarget, obstacleMask))
+                if(!Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z + 1), dirToTarget, dstToTarget, obstacleMask))
                 {
                     visibleTargets.Add(target.GetComponent<PlayerObject>());
                 }
@@ -368,7 +368,16 @@ public class MonsterController : Jericho
                 }
             }
         }
+            Debug.Log(output);
         return output;
+    }
+    public Vector3 DirFromAngle(float angleInDegrees, bool angleIsGlobal)
+    {
+        if (!angleIsGlobal)
+        {
+            angleInDegrees += transform.eulerAngles.y;
+        }
+        return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
     }
     int calculateWeighting(Vector3 pointPos)
     {

@@ -12,4 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9596177dfe9db094c8f65eff1634e444, type: 3}
   m_Name: taskDatabase
   m_EditorClassIdentifier: 
-  allTasks: []
+  allTasks:
+  - {fileID: 11400000, guid: 80185e28507d04446abf89e0c0640f7b, type: 2}
+  - {fileID: 11400000, guid: 80185e28507d04446abf89e0c0640f7b, type: 2}
+  - {fileID: 11400000, guid: d6fe64c3f9fc56849b4a1f08d33db5f4, type: 2}
+  - {fileID: 11400000, guid: d6fe64c3f9fc56849b4a1f08d33db5f4, type: 2}
+  - {fileID: 11400000, guid: b672ff8a049ac304fb55ac1451df3f05, type: 2}
+  - {fileID: 11400000, guid: b672ff8a049ac304fb55ac1451df3f05, type: 2}
+  - {fileID: 11400000, guid: 8791752c27854e64cb631e8107eaaae8, type: 2}
+  - {fileID: 11400000, guid: 8791752c27854e64cb631e8107eaaae8, type: 2}
+  - {fileID: 11400000, guid: 7774624e9d4974344ae4152e58dde8a6, type: 2}
+  - {fileID: 11400000, guid: 7774624e9d4974344ae4152e58dde8a6, type: 2}
+  - {fileID: 11400000, guid: 3e1c4e1638e7829459f36016ec1b69ba, type: 2}

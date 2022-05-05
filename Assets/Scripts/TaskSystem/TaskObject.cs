@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class TaskObject : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class TaskObject : MonoBehaviour
     List<PlayerObject> hasInteracted = new List<PlayerObject>();
     public Task thisTask;
     float startTime = 0f;
-    TaskUI curHeldTask;
+    public TaskUI curHeldTask;
     public void RunInteract(PlayerObject newInteractor)
     {
         bool canIInteract = true;
@@ -19,15 +20,18 @@ public class TaskObject : MonoBehaviour
         }
         if (canIInteract)
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            //newInteractor.GetComponent<PlayerObject>().inputActions.PlayerMovement.Interact.performed += InteractWithObject;
+          
+            if (newInteractor.GetComponent<PlayerObject>().inputActions.PlayerMovement.Interact.IsPressed())//Input.GetKeyDown(KeyCode.E)) 
             {
                 startTime = Time.time;
             }
-            if (Input.GetKey(KeyCode.E))
+            if (newInteractor.GetComponent<PlayerObject>().inputActions.PlayerMovement.Interact.IsPressed())//Input.GetKey(KeyCode.E))
             {
                 if ((startTime + thisTask.numToCompletion) >= Time.time)
                     curHeldTask.UpdateTaskData(thisTask.numToCompletion, this);
             }
+          
         }
     }
     private void OnTriggerStay(Collider other)
@@ -37,9 +41,17 @@ public class TaskObject : MonoBehaviour
             RunInteract(other.GetComponent<PlayerObject>());
             foreach(var obj in other.GetComponent<PlayerObject>().myTasks)
             {
+                Debug.Log(obj.taskTitle);
                 if (obj.myTask == thisTask)
                     curHeldTask = obj;
             }
         }
+    }
+    public void InteractWithObject(InputAction.CallbackContext context)
+    {
+        startTime = Time.time;
+        if ((startTime + thisTask.numToCompletion) >= Time.time)
+            curHeldTask.UpdateTaskData(thisTask.numToCompletion, this);
+
     }
 }

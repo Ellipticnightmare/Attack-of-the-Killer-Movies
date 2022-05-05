@@ -34,18 +34,21 @@ public class TaskUI : MonoBehaviour
     }
     public void UpdateTaskUI()
     {
-        taskTitle.text = myTask.title;
-        taskDescription.text = myTask.description;
-        taskNumToCompletion.text = "";
-        taskNumberCompleted.text = "";
-        if (myTask.numToCompletion >= 0)
+        if (taskTitle != null)
         {
-            numberCompleted++;
-            taskNumToCompletion.text = myTask.numToCompletion.ToString();
-            taskNumberCompleted.text = numberCompleted.ToString();
+            if (numberCompleted >= myTask.numToCompletion)
+                TaskManager.RemoveFromTasks(this, holder);
+            taskTitle.text = myTask.title;
+            taskDescription.text = myTask.description;
+            taskNumToCompletion.text = "";
+            taskNumberCompleted.text = "";
+            if (myTask.numToCompletion >= 0)
+            {
+                numberCompleted++;
+                taskNumToCompletion.text = myTask.numToCompletion.ToString();
+                taskNumberCompleted.text = numberCompleted.ToString();
+            }
         }
-        if (numberCompleted >= myTask.numToCompletion)
-            TaskManager.RemoveFromTasks(this, holder);
     }
     public void UpdateTaskData(int inNum, TaskObject taskObj)
     {

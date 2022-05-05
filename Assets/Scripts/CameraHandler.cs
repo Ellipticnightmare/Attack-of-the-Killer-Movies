@@ -12,6 +12,7 @@ public class CameraHandler : MonoBehaviour
       private Vector3 cameraTransformPosition;
       private LayerMask ignoreLayers;
       private Vector3 cameraFollowVelocity = Vector3.zero;
+      public Transform topDownView;
 
       public static CameraHandler singleton;
 
@@ -41,12 +42,17 @@ public class CameraHandler : MonoBehaviour
 
       public void FollowTarget (float delta)
       {
-        Debug.Log("I should be working");
         Vector3 targetPosition = Vector3.SmoothDamp(myTransform.position, targetTransform.position, ref cameraFollowVelocity, delta / followSpeed);
         myTransform.position = targetPosition;
 
         HandleCameraCollision(delta);
       }
+    public void JumpToTop()
+    {
+        targetTransform = null;
+        transform.position = topDownView.position;
+        transform.rotation = topDownView.rotation;
+    }
 
       public void HandleCameraRotation(float delta, float mouseXInput, float mouseYInput)
       {
