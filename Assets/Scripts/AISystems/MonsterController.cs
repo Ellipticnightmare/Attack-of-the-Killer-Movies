@@ -3,170 +3,143 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(NavMeshAgent))]
-[RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(Rigidbody))]
-public class MonsterController : MonoBehaviour
+public class MonsterController : Jericho
 {
-    public float viewRadius;
-    [Range(0, 360)]
-    public float viewAngle;
-    [Tooltip("This is ONLY the players")]
-    public LayerMask targetMask;
-    [Tooltip("This is everything BUT the players")]
-    public LayerMask obstacleMask;
-    [Header("DISABLE THIS UNTIL ANIMATIONS")]
-    public bool hasAnimations;
-    NavMeshAgent agent;
-    NavMeshPath path;
-    List<webNodePoint> nodeWeb = new List<webNodePoint>();
-    webNodePoint curNode, nextNode;
-    Animator anim;
-    public int nodeMinDistance, nodeWeightDistance;
-    Vector3 avoidDest;
-    [Range(8, 14)]
-    public int maximumWebSize;
-    [Range(0, 10)]
-    public int roamingDesire;
-    [Range(70, 90)]
-    public int revisitThreshold;
-    public float walkRadius = 4f;
-    public float moveSpeed, rotSpeed;
-    enemyState EnemyState = enemyState.Roam;
+    public enemy Enemy = enemy.Clown;
     [HideInInspector]
-    public bool isClown;
-    float clownTimer, trackTimer, stunTimer, attackCooldown, attackCooldownReal;
-    Barrier targBar;
-    public LayerMask layerMask;
-    public PlayerObject targPlayer;
+    public float clownTimer;
     // Start is called before the first frame update
     void Start()
     {
         trackTimer = 2;
-        clownTimer = 300;
-        agent = this.GetComponent<NavMeshAgent>();
-        anim = this.GetComponent<Animator>();
-        path = new NavMeshPath();
+        attackCooldown = 1;
+        MyNavMeshManager.agent = this.GetComponent<NavMeshAgent>();
+        MyAnimations.anim = this.GetComponent<Animator>();
+        MyNavMeshManager.path = new NavMeshPath();
         BuildNode();
+        UpdateWeightingList();
     }
 
     // Update is called once per frame
     void Update()
     {
-        maximumWebSize = Mathf.Clamp(maximumWebSize, 7, 15);
-        revisitThreshold = Mathf.Clamp(revisitThreshold, 69, 91);
-        agent.speed = moveSpeed;
-        agent.angularSpeed = rotSpeed;
+        MyNavMeshManager.maximumWebSize = Mathf.Clamp(MyNavMeshManager.maximumWebSize, 7, 15);
+        MyNavMeshManager.revisitThreshold = Mathf.Clamp(MyNavMeshManager.revisitThreshold, 69, 91);
+        MyNavMeshManager.agent.speed = MyAIManager.moveSpeed;
+        MyNavMeshManager.agent.angularSpeed = MyAIManager.rotSpeed;
         if (attackCooldownReal < attackCooldown)
             attackCooldownReal += Time.deltaTime;
-        switch (EnemyState)
+        switch (MyAIManager.EnemyState)
         {
-            case enemyState.Roam:
-                if(hasAnimations)
-                anim.SetInteger("state", 0); //walk anim
-                if (canSeePlayer())
+            case aiManager.enemyState.Roam:
+                if (MyAnimations.hasAnimations)
+                    MyAnimations.anim.SetInteger("state", 0); //walk anim
+                if (canSeePlayer() && Enemy != enemy.Clown)
                 {
-                    if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, path))
+                    if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
                     {
-                        if (path.status == NavMeshPathStatus.PathComplete)
+                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
                         {
                             startHuntTrigger();
                         }
                         else
                         {
-                            EnemyState = enemyState.targetBarricades;
+                            MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
                         }
                     }
                 }
                 break;
-            case enemyState.Chase:
-                if (hasAnimations)
-                    anim.SetInteger("state", 1); //run anim
+            case aiManager.enemyState.Chase:
+                if (MyAnimations.hasAnimations)
+                    MyAnimations.anim.SetInteger("state", 1); //run anim
                 if (trackTimer >= 0)
                 {
                     trackTimer -= Time.deltaTime;
-                    agent.SetDestination(targPlayer.transform.position);
+                    MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
                 }
                 else
                 {
                     if (canSeePlayer())
                     {
-                        if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, path))
+                        if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
                         {
-                            if (path.status == NavMeshPathStatus.PathComplete)
+                            if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
                             {
-                                agent.SetDestination(targPlayer.transform.position);
+                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
                             }
                             else
                             {
-                                EnemyState = enemyState.targetBarricades;
+                                MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
                             }
                         }
                     }
                     else
                     {
-                        if (isClown)
+                        if (Enemy == enemy.Clown)
                         {
                             if (clownTimer >= 0)
+                            {
                                 clownTimer--;
+                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
+                            }
                             else
                             {
-                                pingBarricade(true);
-                                EnemyState = enemyState.Roam;
+                                MyAIManager.EnemyState = aiManager.enemyState.Roam;
+                                BuildNode();
                             }
                         }
                         else
                         {
                             pingBarricade(false);
-                            EnemyState = enemyState.Roam;
+                            MyAIManager.EnemyState = aiManager.enemyState.Roam;
                         }
                     }
                     trackTimer = 2;
                 }
                 break;
-            case enemyState.targetBarricades:
+            case aiManager.enemyState.targetBarricades:
                 pingBarricade(false);
                 break;
-            case enemyState.Stunned:
-                if (hasAnimations)
-                    anim.SetInteger("state", 2); //Dizzy/stun anim
-                agent.speed = 0;
-                agent.angularSpeed = 0;
+            case aiManager.enemyState.Stunned:
+                if (MyAnimations.hasAnimations)
+                    MyAnimations.anim.SetInteger("state", 2); //Dizzy/stun anim
+                MyNavMeshManager.agent.speed = 0;
+                MyNavMeshManager.agent.angularSpeed = 0;
                 if (stunTimer >= 0)
                     stunTimer -= Time.deltaTime;
                 else
                 {
                     BuildNode();
-                    EnemyState = enemyState.Roam;
+                    MyAIManager.EnemyState = aiManager.enemyState.Roam;
                 }
                 break;
-            case enemyState.Attack:
-                if (hasAnimations)
-                    anim.SetInteger("state", 3); //Attack anim
+            case aiManager.enemyState.Attack:
+                if (MyAnimations.hasAnimations)
+                    MyAnimations.anim.SetInteger("state", 3); //Attack anim
                 break;
         }
-        if (!agent.pathPending)
+        if (!MyNavMeshManager.agent.pathPending)
         {
-            if(agent.remainingDistance <= agent.stoppingDistance)
+            if (MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance)
             {
-                agent.velocity = new Vector3(0, 0, 0);
-                if(!agent.hasPath || agent.velocity.magnitude == 0)
+                MyNavMeshManager.agent.velocity = new Vector3(0, 0, 0);
+                if (!MyNavMeshManager.agent.hasPath || MyNavMeshManager.agent.velocity.magnitude == 0)
                 {
-                    if(attackCooldownReal >= attackCooldown)
+                    if (attackCooldownReal >= attackCooldown)
                     {
-                        switch (EnemyState)
+                        switch (MyAIManager.EnemyState)
                         {
-                            case enemyState.Roam:
+                            case aiManager.enemyState.Roam:
                                 BuildNode();
                                 break;
-                            case enemyState.Chase:
-                                attack(targPlayer.transform);
+                            case aiManager.enemyState.Chase:
+                                attack(targPlayer);
                                 break;
-                            case enemyState.targetBarricades:
+                            case aiManager.enemyState.targetBarricades:
                                 hitBarricade();
                                 break;
-                            case enemyState.Attack:
-                                attack(targPlayer.transform);
+                            case aiManager.enemyState.Attack:
+                                attack(targPlayer);
                                 break;
                         }
                         attackCooldownReal = 0;
@@ -175,6 +148,7 @@ public class MonsterController : MonoBehaviour
             }
         }
     }
+<<<<<<< Updated upstream
     public virtual void BuildNode() /*gets run at start, when enemy exits Roam state,
                       and when enemy reaches their destination in Roam state*/
     {
@@ -417,6 +391,27 @@ public class MonsterController : MonoBehaviour
         targetBarricades,
         Attack,
         Vanish //Runs on Dracula and Alien
+=======
+    public override void pingBarricade(bool fromPlayer) => base.pingBarricade(fromPlayer);
+    public override void BuildNode() => base.BuildNode();
+    public override void attack(PlayerObject player) => base.attack(player);
+    public override void hitBarricade() => base.hitBarricade();
+    public override void startHuntTrigger() => base.startHuntTrigger();
+    public override void VanishEnemy() => base.VanishEnemy();
+    public override void ReturnEnemy() => base.ReturnEnemy();
+    public override void FinishHit() => base.FinishHit();
+    public override void StartStun(float stunTime) => base.StartStun(stunTime);
+    public enum enemy
+    {
+        Blob,
+        Dracula,
+        Frankenstein,
+        Wolfman,
+        Mummy,
+        Grey,
+        SwampMonster,
+        Clown
+>>>>>>> Stashed changes
     };
 }
 [System.Serializable]
