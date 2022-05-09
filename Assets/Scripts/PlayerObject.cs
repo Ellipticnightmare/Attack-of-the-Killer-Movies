@@ -97,7 +97,7 @@ public class PlayerObject : MonoBehaviour
     float movementSpeed = 5;
     [SerializeField]
     float rotationSpeed = 10;
-    private void Awake()
+    private void Start()
     {
         rigidbody = GetComponent<Rigidbody>();
         cameraObject = GameObject.FindGameObjectWithTag("MainCamera").GetComponentInChildren<Camera>().transform;
@@ -176,7 +176,7 @@ public class PlayerObject : MonoBehaviour
             }
             else
             {
-                MoveInput(delta);
+                cameraHandler = CameraHandler.singleton;
             }
         }
     }

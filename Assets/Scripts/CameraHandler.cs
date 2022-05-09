@@ -21,7 +21,7 @@ public class CameraHandler : MonoBehaviour
       public float pivotSpeed = 0.03f;
 
       private float targetPosition;
-      private float defaultPosition;
+      public float defaultPosition;
       private float lookAngle;
       private float pivotAngle;
       public float minimumPivot = -35;
@@ -31,7 +31,7 @@ public class CameraHandler : MonoBehaviour
       public float cameraSphereRadius = 0.2f;
       public float cameraCollisionOffset = 0.2f;
       public float minimumCollisionOffset = 0.2f;
-
+      
       private void Awake ()
       {
         singleton = this;
