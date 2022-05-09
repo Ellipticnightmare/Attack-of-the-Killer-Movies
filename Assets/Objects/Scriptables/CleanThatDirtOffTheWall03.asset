@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: CleanThatDirtOffTheWall03
   m_EditorClassIdentifier: 
   goalType: 1
-  title: 
-  description: 
-  numToCompletion: 1
+  title: Strange dirt on the BLANK wall
+  description: Clean that strange dirt mark off the BLANK wall
+  numToCompletion: 3
