@@ -6,26 +6,28 @@ using UnityEngine.UI;
 
 public class TaskManager : MonoBehaviour
 {
-    static List<TaskObject> allTaskObjects = new List<TaskObject>();
+    public static TaskManager instance;
+    List<TaskObject> allTaskObjects = new List<TaskObject>();
     public TaskDatabase myTaskDatabase;
     [HideInInspector]
     public List<Task> allTasks = new List<Task>();
-    static List<Task> activeTasks = new List<Task>();
-    static List<Task> completedTasks = new List<Task>();
-    static List<TaskUI> SelectedTaskUIs = new List<TaskUI>();
+    List<Task> activeTasks = new List<Task>();
+    List<Task> completedTasks = new List<Task>();
+    List<TaskUI> SelectedTaskUIs = new List<TaskUI>();
     public List<PlayerObject> ns_activePlayers = new List<PlayerObject>();
-    static List<PlayerObject> activePlayers = new List<PlayerObject>();
+    List<PlayerObject> activePlayers = new List<PlayerObject>();
 
     public GameObject taskObject; //reference to prefab that will show all task information
     public int maxDisplayTasks = 6;
     void Start()
     {
+        instance = this;
         allTasks.AddRange(myTaskDatabase.allTasks);
         TaskObject[] allObjects = FindObjectsOfType<TaskObject>();
         allTaskObjects.AddRange(allObjects);
         CreatePlayerLists();
     }
-    public static void PlayerDied() //called from GameManager when a player dies, unlocks all tasks
+    public void PlayerDied(PlayerObject player) //called from GameManager when a player dies, unlocks all tasks
                                     //in case surviving players have already completed a task there,
                                     //thus preventing hard locks where players would be unable to re-do
                                     //a task
@@ -34,14 +36,14 @@ public class TaskManager : MonoBehaviour
         {
             item.doesDiscriminateBetweenPlayers = false;
         }
-        FindObjectOfType<TaskManager>().ReDelegateTasks();
+        FindObjectOfType<TaskManager>().ReDelegateTasks(player);
     }
-    public void ReDelegateTasks() => StartCoroutine(RedelegateTasks());
+    public void ReDelegateTasks(PlayerObject player) => StartCoroutine(RedelegateTasks(player));
     public static void UpdatedTask(TaskUI goal)
     {
         goal.UpdateTaskUI();
     }
-    public static void RemoveFromTasks(TaskUI goal, TaskObject taskGoal)
+    public void RemoveFromTasks(TaskUI goal, TaskObject taskGoal)
     {
         foreach (var obj in activePlayers)
         {
@@ -77,7 +79,7 @@ public class TaskManager : MonoBehaviour
                 canWin = false;
         }
         if (canWin)
-            GameManager.FinishedGame();
+            GameManager.instance.FinishedGame();
     }
     public void CreatePlayerLists()
     {
@@ -91,7 +93,7 @@ public class TaskManager : MonoBehaviour
         activePlayers = ns_activePlayers;
         StartCoroutine(CreateTaskLists());
     }
-    public static void UpdateWorld()
+    public void UpdateWorld()
     {
         /*foreach (var item in allTaskObjects)
         {
@@ -159,7 +161,7 @@ public class TaskManager : MonoBehaviour
         UpdateWorld();
         GameManager.togglePause();
     }
-    static IEnumerator RedelegateTasks()
+    IEnumerator RedelegateTasks(PlayerObject player)
     {
         List<PlayerObject> curLivingPlayers = new List<PlayerObject>();
         curLivingPlayers.AddRange(FindObjectsOfType<PlayerObject>());
@@ -191,6 +193,8 @@ public class TaskManager : MonoBehaviour
         {
             item.BuildMyTaskList();
         }
+        Destroy(player.gameObject);
+        FindObjectOfType<SwapManager>().StartSwap(player);
         UpdateWorld();
     }
 }

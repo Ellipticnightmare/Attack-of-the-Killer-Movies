@@ -37,7 +37,7 @@ public class TaskUI : MonoBehaviour
         if (taskTitle != null)
         {
             if (numberCompleted >= myTask.numToCompletion)
-                TaskManager.RemoveFromTasks(this, holder);
+                TaskManager.instance.RemoveFromTasks(this, holder);
             taskTitle.text = myTask.title;
             taskDescription.text = myTask.description;
             taskNumToCompletion.text = "";

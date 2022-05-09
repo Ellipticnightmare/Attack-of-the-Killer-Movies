@@ -10,6 +10,8 @@ public class TaskObject : MonoBehaviour
     public Task thisTask;
     float startTime = 0f;
     public TaskUI curHeldTask;
+    public GameObject toBeDeactivated;
+    public GameObject toBeActivated;
     public void RunInteract(PlayerObject newInteractor)
     {
         bool canIInteract = true;
@@ -51,7 +53,11 @@ public class TaskObject : MonoBehaviour
     {
         startTime = Time.time;
         if ((startTime + thisTask.numToCompletion) >= Time.time)
+        {
             curHeldTask.UpdateTaskData(thisTask.numToCompletion, this);
+            toBeActivated.SetActive(true);
+            toBeDeactivated.SetActive(false);
+        }
 
     }
 }
