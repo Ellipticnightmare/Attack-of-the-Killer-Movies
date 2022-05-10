@@ -47,13 +47,6 @@ public class CameraHandler : MonoBehaviour
 
         HandleCameraCollision(delta);
       }
-    public void JumpToTop()
-    {
-        targetTransform = null;
-        transform.position = topDownView.position;
-        transform.rotation = topDownView.rotation;
-    }
-
       public void HandleCameraRotation(float delta, float mouseXInput, float mouseYInput)
       {
         lookAngle += (mouseXInput * lookSpeed) / delta;

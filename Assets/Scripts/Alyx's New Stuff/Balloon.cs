@@ -17,7 +17,7 @@ public class Balloon : MonoBehaviour
             if(!Physics.Linecast(myPosition, targetDir))
             {
                 EnemyManager.instance.Balloons.balloonCount--;
-                Clown.startHuntTrigger();
+                Clown.startHuntTrigger(this.transform.position);
                 Clown.clownTimer = clownTimer;
                 Clown.targPlayer = other.GetComponent<PlayerObject>();
                 SFXManager.instance.PlaySound(MyAudio.mySound, transform.position);

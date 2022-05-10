@@ -8,21 +8,42 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody))]
 public class Jericho : MonoBehaviour
 {
+    public personality Personality = personality.Aggressive;
     public myAudio MyAudio;
     public animationManager MyAnimations;
     public aiManager MyAIManager;
     public navmeshManager MyNavMeshManager;
+    public Path MyAStarManager;
     [HideInInspector]
     public PlayerObject targPlayer;
+    [HideInInspector]
+    public SoundPoint targNoise;
     Vector3 avoidDest;
     [HideInInspector]
     public Barrier targBar;
     [HideInInspector]
     public float trackTimer, stunTimer, attackCooldown, attackCooldownReal;
+    [HideInInspector]
+    public bool hasFinishedPath = false;
+    [HideInInspector]
+    public float realMovSpeed;
 
+    #region Pathfinding
+    #region Generic
+    public virtual void startHuntTrigger(Vector3 newTarget) //Can be manually triggered by Clown
+    {
+        if (EnemyManager.instance.isPlayerActive(targPlayer) && targPlayer.transform.position == newTarget)
+            FindPath(transform.position, EnemyManager.instance.returnPlayerAttackAngle(targPlayer, this));
+        else
+            FindPath(transform.position, newTarget);
+        targNoise = null;
+        updateNodeWeight();
+        SFXManager.instance.PlaySound(MyAudio.mySound, MyAudio.mySource.position);
+        MyAIManager.EnemyState = aiManager.enemyState.Chase;
+    }
     public void UpdateWeightingList()
     {
-        MyAIManager.myPreferredAngles.Sort((x,y) => y.nodeWeighting.CompareTo(x.nodeWeighting));
+        MyAIManager.myPreferredAngles.Sort((x, y) => y.nodeWeighting.CompareTo(x.nodeWeighting));
     }
     void updateNodeWeight() //gets run when enemy spots player for the first time, exiting the Roam state
     {
@@ -42,47 +63,172 @@ public class Jericho : MonoBehaviour
         avoidDest = x.nodePoint;
         MyNavMeshManager.nodeWeb[newI] = x;
     }
-    IEnumerator waitForEndOfAnimation()
+    public int calculateWeighting(Vector3 pointPos)
     {
-        while (MyAIManager.EnemyState != aiManager.enemyState.Roam)
+        int output = 0;
+        float minDist = Mathf.Infinity;
+        PlayerObject[] enemies = FindObjectsOfType<PlayerObject>();
+        foreach (var item in enemies)
         {
-            yield return new WaitForEndOfFrame();
+            if (Vector3.Distance(item.transform.position, pointPos) < minDist)
+                minDist = Vector3.Distance(item.transform.position, pointPos);
         }
-        MyAIManager.EnemyState = aiManager.enemyState.Roam;
+        int genWeighting = (int)(100 - minDist);
+        return output;
     }
-    public virtual void BuildNode() /*gets run at start, when enemy exits Roam state,
-                      and when enemy reaches their destination in Roam state*/
+    public bool canSeePlayer()
     {
-        bool isValidNewWebPoint = true;
-        Vector3 newPoint = Vector3.zero;
-        while (newPoint == Vector3.zero)
+        bool output = false;
+        List<PlayerObject> visibleTargets = new List<PlayerObject>();
+        visibleTargets.Clear();
+        Collider[] targetsInViewRadius = Physics.OverlapSphere(MyPosition(), MyAIManager.viewConeRadius, MyAIManager.targetMask);
+        for (int i = 0; i < targetsInViewRadius.Length; i++)
         {
-            newPoint = RandomNavmeshLocation(MyNavMeshManager.walkRadius);
-        }
-        if (MyNavMeshManager.nodeWeb.Count > 1 && MyNavMeshManager.nodeWeb.Count <= 7)
-        {
-            for (int i = 0; i < MyNavMeshManager.nodeWeb.Count; i++)
+            Transform target = targetsInViewRadius[i].transform;
+            Vector3 dirToTarget = (target.position - MyPosition()).normalized;
+            if (Vector3.Angle(transform.forward, dirToTarget) < MyAIManager.viewConeAngle / 2)
             {
-                var x = MyNavMeshManager.nodeWeb[i];
-                x.weighting = Mathf.Clamp(x.weighting - Random.Range(1, 4), 0, 100);
-                MyNavMeshManager.nodeWeb[i] = x;
-                if (Vector3.Distance(newPoint, MyNavMeshManager.nodeWeb[i].nodePoint) <= MyNavMeshManager.nodeMinDistance)
-                    isValidNewWebPoint = false;
+                float dstToTarget = Vector3.Distance(MyPosition(), target.position);
+                if (!Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z + 1), dirToTarget, dstToTarget, MyAIManager.obstacleMask))
+                {
+                    visibleTargets.Add(target.GetComponent<PlayerObject>());
+                }
             }
         }
-        else if (MyNavMeshManager.nodeWeb.Count >= 8)
+        if (visibleTargets.Count > 0)
         {
-            MyNavMeshManager.nodeWeb.Sort((x, y) => y.weighting.CompareTo(x.weighting));
-            MyNavMeshManager.nodeWeb.Remove(MyNavMeshManager.nodeWeb[MyNavMeshManager.nodeWeb.Count - 1]);
-            isValidNewWebPoint = false;
+            output = true;
+            float minDist = Mathf.Infinity;
+            foreach (var item in visibleTargets)
+            {
+                if (Vector3.Distance(item.transform.position, MyPosition()) < minDist)
+                {
+                    minDist = Vector3.Distance(item.transform.position, MyPosition());
+                    targPlayer = item;
+                }
+            }
+        }
+        return output;
+    }
+    public bool hearSound()
+    {
+        bool output = false;
+        List<SoundPoint> soundTargets = new List<SoundPoint>();
+        soundTargets.Clear();
+        Collider[] targetsInHearRadius = Physics.OverlapSphere(MyPosition(), MyAIManager.hearingRadius, MyAIManager.targetMask);
+        float distCheck = MyAIManager.hearingRadius + 1;
+        int x = -1;
+        for (int i = 0; i < targetsInHearRadius.Length; i++)
+        {
+            float dstToTarget = Vector3.Distance(MyPosition(), targetsInHearRadius[i].transform.position);
+            Vector3 dirToTarget = (targetsInHearRadius[i].transform.position - MyPosition()).normalized;
+            if (!Physics.Raycast(MyPosition(), dirToTarget))
+                dstToTarget = dstToTarget + 4;
+            if (dstToTarget < distCheck && targetsInHearRadius[i].GetComponent<SoundPoint>() != null)
+            {
+                targNoise = targetsInHearRadius[i].GetComponent<SoundPoint>();
+                distCheck = dstToTarget;
+                output = true;
+            }
+        }
+        return output;
+    }
+    public Vector3 DirFromAngle(float angleInDegrees, bool angleIsGlobal)
+    {
+        if (!angleIsGlobal)
+        {
+            angleInDegrees += transform.eulerAngles.y;
+        }
+        return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
+    }
+    public Vector3 MyPosition()
+    {
+        return this.transform.position;
+    }
+    #endregion
+    #region NavMesh
+    public virtual void BuildNode()
+    {
+        if (MyAIManager.tensionIndex > MyAIManager.patienceIndex)
+            MyAIManager.EnemyState = aiManager.enemyState.Hunting;
+        bool isValidNewWebPoint = true;
+        Vector3 newPoint = Vector3.zero;
+        if (EnemyManager.instance.difficultyCheck >= 15 && MyAIManager.EnemyState == aiManager.enemyState.Hunting)
+        {
+            MyAIManager.patienceIndex--;
+            MyAIManager.tensionIndex = 0;
+            MyAIManager.patienceIndex = Mathf.Clamp(MyAIManager.patienceIndex, 3, 15);
+            List<Vector3> searchChecks = new List<Vector3>();
+            Vector3 newPointA = Vector3.zero;
+            Vector3 newPointB = Vector3.zero;
+            Vector3 newPointC = Vector3.zero;
+            while (newPointA == Vector3.zero)
+                newPointA = RandomNavmeshLocation(MyNavMeshManager.walkRadius + 15);
+            while (newPointB == Vector3.zero)
+                newPointB = RandomNavmeshLocation(MyNavMeshManager.walkRadius + 15);
+            while (newPointC == Vector3.zero)
+                newPointC = RandomNavmeshLocation(MyNavMeshManager.walkRadius + 15);
+            searchChecks.Add(newPointA);
+            searchChecks.Add(newPointB);
+            searchChecks.Add(newPointC);
+            float hotOrCold = Mathf.Infinity;
+            Vector3 targPos = Vector3.zero;
+            foreach (var item in searchChecks)
+            {
+                if (Vector3.Distance(item, FindObjectOfType<PlayerObject>().transform.position) < hotOrCold)
+                {
+                    hotOrCold = Vector3.Distance(item, FindObjectOfType<PlayerObject>().transform.position);
+                    targPos = item;
+                }
+            }
+            while (hotOrCold < MyAIManager.hotOrCold && hotOrCold > 1)
+            {
+                Vector3 chaseTarg = Random.insideUnitSphere * MyNavMeshManager.walkRadius;
+                chaseTarg += targPos;
+                NavMeshHit hit;
+                if (NavMesh.SamplePosition(chaseTarg, out hit, MyNavMeshManager.walkRadius, 1) && Vector3.Distance(hit.position, FindObjectOfType<PlayerObject>().transform.position) < MyAIManager.hotOrCold)
+                {
+                    MyAIManager.hotOrCold = (int)hotOrCold;
+                    hotOrCold = Vector3.Distance(hit.position, FindObjectOfType<PlayerObject>().transform.position);
+                    targPos = hit.position;
+                }
+            }
+            newPoint = targPos;
+        }
+        else
+        {
+            if (EnemyManager.instance.difficultyCheck >= 15)
+                MyAIManager.tensionIndex++;
+            while (newPoint == Vector3.zero)
+            {
+                newPoint = RandomNavmeshLocation(MyNavMeshManager.walkRadius);
+            }
+            if (MyNavMeshManager.nodeWeb.Count > 1 && MyNavMeshManager.nodeWeb.Count <= 7)
+            {
+                for (int i = 0; i < MyNavMeshManager.nodeWeb.Count; i++)
+                {
+                    var x = MyNavMeshManager.nodeWeb[i];
+                    x.weighting = Mathf.Clamp(x.weighting - Random.Range(1, 4), 0, 100);
+                    MyNavMeshManager.nodeWeb[i] = x;
+                    if (Vector3.Distance(newPoint, MyNavMeshManager.nodeWeb[i].nodePoint) <= MyNavMeshManager.nodeMinDistance)
+                        isValidNewWebPoint = false;
+                }
+            }
+            else if (MyNavMeshManager.nodeWeb.Count >= 8)
+            {
+                MyNavMeshManager.nodeWeb.Sort((x, y) => y.weighting.CompareTo(x.weighting));
+                MyNavMeshManager.nodeWeb.Remove(MyNavMeshManager.nodeWeb[MyNavMeshManager.nodeWeb.Count - 1]);
+                isValidNewWebPoint = false;
+            }
         }
         if (isValidNewWebPoint)
         {
             webNodePoint newNode = new webNodePoint();
-            int genWeighting = calculateWeighting(newNode.nodePoint);
+            int genWeighting = calculateWeighting(newPoint);
             newNode.nodePoint = newPoint;
             newNode.weighting = (int)Mathf.Clamp(genWeighting, 0, 100);
-            MyNavMeshManager.nodeWeb.Add(newNode);
+            if (EnemyManager.instance.difficultyCheck < 15)
+                MyNavMeshManager.nodeWeb.Add(newNode);
             MyNavMeshManager.nextNode = newNode;
         }
         else
@@ -114,54 +260,12 @@ public class Jericho : MonoBehaviour
         if (NavMesh.CalculatePath(transform.position, MyNavMeshManager.curNode.nodePoint, NavMesh.AllAreas, MyNavMeshManager.path))
         {
             if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                MyNavMeshManager.agent.SetDestination(MyNavMeshManager.curNode.nodePoint);
+                FindPath(transform.position, MyNavMeshManager.curNode.nodePoint);
             else
             {
                 MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
             }
         }
-    }
-
-    public virtual void attack(PlayerObject player) //For damage logic and unique effects
-    {
-        MyAIManager.EnemyState = aiManager.enemyState.Attack;
-        player.takeDamage();
-    }
-    public virtual void hitBarricade() //Doesn't get run by Dracula or Blob
-    {
-        MyAIManager.EnemyState = aiManager.enemyState.Attack;
-        targBar.Open();
-    }
-    public virtual void startHuntTrigger() //Can be manually triggered by Clown
-    {
-        if (EnemyManager.instance.isPlayerActive(targPlayer))
-            MyNavMeshManager.agent.SetDestination(EnemyManager.instance.returnPlayerAttackAngle(targPlayer, this));
-        else
-            MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
-        updateNodeWeight();
-        SFXManager.instance.PlaySound(MyAudio.mySound, MyAudio.mySource.position);
-        MyAIManager.EnemyState = aiManager.enemyState.Chase;
-    }
-    public virtual void VanishEnemy()
-    {
-        MyAIManager.EnemyState = aiManager.enemyState.Vanish;
-        MyAnimations.anim.CrossFade("VanishAnim", 0.2f); //Animation MUST be named this
-    }
-    public virtual void ReturnEnemy()
-    {
-        MyAnimations.anim.CrossFade("ReturnAnim", 0.2f); //Animation MUST be named this
-        StartCoroutine(waitForEndOfAnimation());
-    }
-    public virtual void FinishHit()
-    {
-        MyAIManager.EnemyState = aiManager.enemyState.Roam;
-        targBar = null;
-        BuildNode();
-    }
-    public virtual void StartStun(float stunTime)
-    {
-        stunTimer = stunTime;
-        MyAIManager.EnemyState = aiManager.enemyState.Stunned;
     }
     public virtual void pingBarricade(bool fromPlayer)
     {
@@ -192,7 +296,7 @@ public class Jericho : MonoBehaviour
                     }
                 }
                 if (targBar != null)
-                    MyNavMeshManager.agent.SetDestination(targBar.transform.position);
+                    FindPath(transform.position, targBar.transform.position);
                 else
                     Debug.Log(destrucTargs[index]);
             }
@@ -202,7 +306,6 @@ public class Jericho : MonoBehaviour
         else
             BuildNode();
     }
-
     public Vector3 RandomNavmeshLocation(float radius)
     {
         Vector3 randomDirection = Random.insideUnitSphere * radius;
@@ -215,68 +318,111 @@ public class Jericho : MonoBehaviour
             finalPosition = Vector3.zero;
         return finalPosition;
     }
-    public int calculateWeighting(Vector3 pointPos)
+    #endregion
+    #endregion
+    #region A*
+    public void FindPath(Vector3 startPos, Vector3 targetPos)
     {
-        int output = 0;
-        float minDist = Mathf.Infinity;
-        PlayerObject[] enemies = FindObjectsOfType<PlayerObject>();
-        foreach (var item in enemies)
-        {
-            if (Vector3.Distance(item.transform.position, pointPos) < minDist)
-                minDist = Vector3.Distance(item.transform.position, pointPos);
-        }
-        int genWeighting = (int)(100 - minDist);
-        return output;
+        EnemyManager.instance.RequestPath(startPos, targetPos, OnPathFound, this);
     }
-    public bool canSeePlayer()
+    public void OnPathFound(Vector3[] waypoints, bool pathSuccessful)
     {
-        bool output = false;
-        List<PlayerObject> visibleTargets = new List<PlayerObject>();
-        visibleTargets.Clear();
-        Vector3 fromPosition = this.transform.position;
-        Collider[] targetsInViewRadius = Physics.OverlapSphere(fromPosition, MyAIManager.viewConeRadius, MyAIManager.targetMask);
-        for (int i = 0; i < targetsInViewRadius.Length; i++)
+        if (pathSuccessful)
         {
-            Transform target = targetsInViewRadius[i].transform;
-            Vector3 dirToTarget = (target.position - fromPosition).normalized;
-            if (Vector3.Angle(transform.forward, dirToTarget) < MyAIManager.viewConeAngle / 2)
+            MyAStarManager = new Path(waypoints, transform.position, MyAIManager.turnDst);
+            StopCoroutine("FollowPath");
+            StartCoroutine("FollowPath");
+        }
+    }
+    IEnumerator FollowPath()
+    {
+        bool followingPath = true;
+        int pathIndex = 0;
+
+        transform.LookAt(MyAStarManager.lookPoints[0]);
+        Quaternion targetRotation = Quaternion.LookRotation(MyAStarManager.lookPoints[0] - transform.position);
+        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * MyAIManager.rotSpeed);
+
+        while (followingPath)
+        {
+            Vector2 pos2D = new Vector2(transform.position.x, transform.position.z);
+            while (MyAStarManager.turnBoundaries[pathIndex].HasCrossedLine(pos2D))
             {
-                float dstToTarget = Vector3.Distance(fromPosition, target.position);
-                if (!Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z + 1), dirToTarget, dstToTarget, MyAIManager.obstacleMask))
+                if (pathIndex == MyAStarManager.finishLineIndex)
                 {
-                    visibleTargets.Add(target.GetComponent<PlayerObject>());
+                    followingPath = false;
+                    hasFinishedPath = true;
+                    break;
                 }
+                else
+                    pathIndex++;
             }
-        }
-        if (visibleTargets.Count > 0)
-        {
-            output = true;
-            float minDist = Mathf.Infinity;
-            foreach (var item in visibleTargets)
+            if (followingPath)
             {
-                if (Vector3.Distance(item.transform.position, fromPosition) < minDist)
-                {
-                    minDist = Vector3.Distance(item.transform.position, fromPosition);
-                    targPlayer = item;
-                }
+                targetRotation = Quaternion.LookRotation(MyAStarManager.lookPoints[pathIndex] - transform.position);
+                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * MyAIManager.rotSpeed);
+                transform.Translate(Vector3.forward * Time.deltaTime * realMovSpeed, Space.Self);
             }
+            yield return null;
         }
-        return output;
     }
-    public Vector3 DirFromAngle(float angleInDegrees, bool angleIsGlobal)
+    #endregion
+    #region AIs
+    IEnumerator waitForEndOfAnimation()
     {
-        if (!angleIsGlobal)
+        while (MyAIManager.EnemyState != aiManager.enemyState.Roam)
         {
-            angleInDegrees += transform.eulerAngles.y;
+            yield return new WaitForEndOfFrame();
         }
-        return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
+        MyAIManager.EnemyState = aiManager.enemyState.Roam;
     }
+    public virtual void attack(PlayerObject player) //For damage logic and unique effects
+    {
+        Debug.Log("AttackingPlayer");
+        MyAIManager.EnemyState = aiManager.enemyState.Attack;
+        player.takeDamage();
+    }
+    public virtual void hitBarricade() //Doesn't get run by Dracula or Blob
+    {
+        MyAIManager.EnemyState = aiManager.enemyState.Attack;
+        targBar.Open();
+    }
+    public virtual void VanishEnemy()
+    {
+        MyAIManager.EnemyState = aiManager.enemyState.Vanish;
+        MyAnimations.anim.CrossFade("VanishAnim", 0.2f); //Animation MUST be named this
+    }
+    public virtual void ReturnEnemy()
+    {
+        MyAnimations.anim.CrossFade("ReturnAnim", 0.2f); //Animation MUST be named this
+        StartCoroutine(waitForEndOfAnimation());
+    }
+    public virtual void FinishHit()
+    {
+        MyAIManager.EnemyState = aiManager.enemyState.Roam;
+        targBar = null;
+        BuildNode();
+    }
+    public virtual void StartStun(float stunTime)
+    {
+        stunTimer = stunTime;
+        MyAIManager.EnemyState = aiManager.enemyState.Stunned;
+    }
+    #endregion
+    public enum personality
+    {
+        Stealthy, //higher weighting against Open Areas
+        Seeker, //higher weighting against Corridors
+        Aggressive, //higher speed in Corridors
+        Cocky, //higher speed in Open Areas
+        Null
+    };
 }
 [System.Serializable]
 public struct weightedAngles
 {
     [Header("CLOCKWISE, STARTING AT 0 IN FRONT OF PLAYER")]
-    [Range(0,7)]
+    [Range(0, 7)]
     public int nodeNum;
     [Header("HIGHER IS BETTER, ONLY 1 EIGHT")]
     [Range(0, 8)]
