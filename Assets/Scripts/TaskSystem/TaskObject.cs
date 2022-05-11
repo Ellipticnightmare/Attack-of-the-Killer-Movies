@@ -7,7 +7,7 @@ public class TaskObject : MonoBehaviour
 {
     public Task thisTask;
     PlayerObject assignedKin;
-    public void RunInteract(PlayerObject newInteractor)
+    public void RunInteract()
     {
         bool b_Input = new PlayerControls().PlayerMovement.Interact.phase == UnityEngine.InputSystem.InputActionPhase.Performed;
         if (b_Input && assignedKin != null)
@@ -19,7 +19,7 @@ public class TaskObject : MonoBehaviour
     {
         if (other.gameObject.GetComponent<PlayerObject>())
         {
-            RunInteract(other.GetComponent<PlayerObject>());
+            RunInteract();
             foreach (var obj in other.GetComponent<PlayerObject>().myTasks)
             {
                 if (obj == thisTask)

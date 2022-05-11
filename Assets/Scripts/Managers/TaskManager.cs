@@ -12,15 +12,13 @@ public class TaskManager : MonoBehaviour
     [HideInInspector]
     public List<Task> allTasks = new List<Task>();
     List<Task> activeTasks = new List<Task>();
-    List<Task> completedTasks = new List<Task>();
-    List<TaskUI> SelectedTaskUIs = new List<TaskUI>();
-    public List<PlayerObject> ns_activePlayers = new List<PlayerObject>();
     List<PlayerObject> activePlayers = new List<PlayerObject>();
 
     public GameObject taskObject; //reference to prefab that will show all task information
     public int maxDisplayTasks = 6;
     void Start()
     {
+        activePlayers.AddRange(FindObjectsOfType<PlayerObject>());
         instance = this;
         allTasks.AddRange(myTaskDatabase.allTasks);
         TaskObject[] allObjects = FindObjectsOfType<TaskObject>();
