@@ -102,8 +102,9 @@ public class MainMenuManager : MonoBehaviour
         GameObject UIObject = new GameObject();
         foreach (var obj in UIObjects)
         {
+            obj.SetActive(false);
             if (obj == UIobj)
-                UIobj.SetActive(false);
+                UIobj.SetActive(true);
         }
     }
 }
