@@ -12,7 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86dbdb7bd7c09014ea2fef632ae2b525, type: 3}
   m_Name: TakeOutTheTrashCinema2
   m_EditorClassIdentifier: 
-  goalType: 1
-  title: Take Out the Trash Cinema 2
-  description: Take out the trash in Cinema 2
-  numToCompletion: 3
+  title: Take Out the trash in Cinema 2
+  description: It just keeps pilling up
