@@ -210,6 +210,8 @@ public class aiManager
     public LayerMask targetMask;
     [Tooltip("This is everything BUT the players")]
     public LayerMask obstacleMask;
+    [Tooltip("This is ONLY the sound layer")]
+    public LayerMask soundMask;
     [Range(3, 5)]
     public float moveSpeed = 3;
     [Range(3, 20)]

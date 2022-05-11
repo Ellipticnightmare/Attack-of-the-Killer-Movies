@@ -268,28 +268,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 993e7d56d27acb24c8978d049f501d4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewRadius: 19
-  viewAngle: 206
-  targetMask:
-    serializedVersion: 2
-    m_Bits: 1024
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 2048
-  hasAnimations: 0
-  nodeMinDistance: 8
-  nodeWeightDistance: 8
-  maximumWebSize: 9
-  roamingDesire: 2
-  revisitThreshold: 86
-  walkRadius: 10
-  moveSpeed: 3
-  rotSpeed: 180
-  isClown: 0
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 256
+  MyAudio:
+    mySound: {fileID: 0}
+    mySource: {fileID: 0}
+  MyAnimations:
+    anim: {fileID: 0}
+    hasAnimations: 0
+  MyAIManager:
+    viewConeRadius: 13
+    viewConeAngle: 190
+    myPreferredAngles: []
+    aggroRange: 10
+    targetMask:
+      serializedVersion: 2
+      m_Bits: 0
+    obstacleMask:
+      serializedVersion: 2
+      m_Bits: 2048
+    soundMask:
+      serializedVersion: 2
+      m_Bits: 8192
+    moveSpeed: 3
+    rotSpeed: 3
+    turnDst: 5
+    EnemyState: 1
+    tensionIndex: 0
+    patienceIndex: 0
+    hotOrCold: 0
+  MyNavMeshManager:
+    walkRadius: 4
+    nodeWeb: []
+    nodeMinDistance: 10
+    nodeWeightDistance: 20
+    agent: {fileID: 0}
+    curNode:
+      nodePoint: {x: 0, y: 0, z: 0}
+      weighting: 0
+    nextNode:
+      nodePoint: {x: 0, y: 0, z: 0}
+      weighting: 0
+    maximumWebSize: 8
+    roamingDesire: 0
+    revisitThreshold: 70
   targPlayer: {fileID: 0}
+  targNoise: {fileID: 0}
+  targBar: {fileID: 0}
+  trackTimer: 0
+  stunTimer: 0
+  attackCooldown: 0
+  attackCooldownReal: 0
+  Enemy: 7
+  clownTimer: 0
+  specialEventTimerSet: 30
 --- !u!1 &5619366315858621979
 GameObject:
   m_ObjectHideFlags: 0
