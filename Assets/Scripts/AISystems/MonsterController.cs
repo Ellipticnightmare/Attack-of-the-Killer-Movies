@@ -191,13 +191,11 @@ public class MonsterController : Jericho
                             BuildNode();
                             break;
                         case aiManager.enemyState.Chase:
+                            Debug.Log("i shoudl be wrokignjg");
                             attack(targPlayer);
                             break;
                         case aiManager.enemyState.targetBarricades:
                             hitBarricade();
-                            break;
-                        case aiManager.enemyState.Attack:
-                            attack(targPlayer);
                             break;
                     }
                     attackCooldownReal = 0;
