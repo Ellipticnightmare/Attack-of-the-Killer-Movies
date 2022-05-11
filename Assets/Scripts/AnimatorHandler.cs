@@ -23,7 +23,7 @@ public class AnimatorHandler : MonoBehaviour
         PlayerObject mama = GetComponentInParent<PlayerObject>();
         float v = 0;
 
-        if(verticalMovement > 0 && verticalMovement < 0.55f)
+        if (verticalMovement > 0 && verticalMovement < 0.55f)
         {
             v = 0.5f;
         }
@@ -31,11 +31,11 @@ public class AnimatorHandler : MonoBehaviour
         {
             v = 1;
         }
-        else if(verticalMovement < 0 && verticalMovement > -0.55f)
+        else if (verticalMovement < 0 && verticalMovement > -0.55f)
         {
             v = -0.5f;
         }
-        else if(verticalMovement < -0.55f)
+        else if (verticalMovement < -0.55f)
         {
             v = -1;
         }
@@ -48,7 +48,7 @@ public class AnimatorHandler : MonoBehaviour
         #region Horizontal
         float h = 0;
 
-        if(horizontalMovement >0 && horizontalMovement < 0.55f)
+        if (horizontalMovement > 0 && horizontalMovement < 0.55f)
         {
             h = 0.5f;
         }
@@ -57,15 +57,15 @@ public class AnimatorHandler : MonoBehaviour
             h = 1;
 
         }
-        else if(horizontalMovement < 0 && horizontalMovement >-0.55f)
+        else if (horizontalMovement < 0 && horizontalMovement > -0.55f)
         {
             h = -0.5f;
 
         }
-        else if(horizontalMovement < -0.55f)
+        else if (horizontalMovement < -0.55f)
         {
             h = -1;
-        }else
+        } else
         {
             h = 0;
         }
@@ -76,10 +76,11 @@ public class AnimatorHandler : MonoBehaviour
             PlayTargetAnimation("crouchToRun", false);
         if (v != 0 && h != 0)
         {
+            PlayTargetAnimation("Locomotion", false);
             anim.SetFloat(vertical, v, 0.1f, Time.deltaTime);
             anim.SetFloat(horizontal, h, 0.1f, Time.deltaTime);
         }
-        if(v == 0 && h == 0)
+        if (v == 0 && h == 0)
         {
             switch (mama.playerState)
             {
