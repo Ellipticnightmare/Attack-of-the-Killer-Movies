@@ -9,7 +9,7 @@ public class TaskObject : MonoBehaviour
     PlayerObject assignedKin;
     public void RunInteract()
     {
-        bool b_Input = new PlayerControls().PlayerMovement.Interact.phase == UnityEngine.InputSystem.InputActionPhase.Performed;
+        bool b_Input = new PlayerControls().PlayerMovement.Interact.phase == InputActionPhase.Performed;
         if (b_Input && assignedKin != null)
         {
             TaskManager.instance.RemoveFromTasks(assignedKin, thisTask);
@@ -20,10 +20,16 @@ public class TaskObject : MonoBehaviour
         if (other.gameObject.GetComponent<PlayerObject>())
         {
             RunInteract();
-            foreach (var obj in other.GetComponent<PlayerObject>().myTasks)
+            if (assignedKin == null)
             {
-                if (obj == thisTask)
-                    assignedKin = other.GetComponent<PlayerObject>();
+                foreach (var obj in other.GetComponent<PlayerObject>().myTasks)
+                {
+                    if (obj == thisTask)
+                    {
+                        assignedKin = other.GetComponent<PlayerObject>();
+                        Debug.Log("I've found my Kinnie uwu");
+                    }
+                }
             }
         }
     }
