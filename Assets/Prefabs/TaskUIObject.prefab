@@ -154,7 +154,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 319.54968, y: 411.93243}
+  m_AnchoredPosition: {x: 140, y: 260}
   m_SizeDelta: {x: 640.8101, y: 134.7175}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7257969314952805293
@@ -191,8 +191,8 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 10
-    m_MaxSize: 300
-    m_Alignment: 4
+    m_MaxSize: 25
+    m_Alignment: 0
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
@@ -233,7 +233,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 319.54968, y: 295.1772}
+  m_AnchoredPosition: {x: 140, y: 220}
   m_SizeDelta: {x: 640.8101, y: 134.7175}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &868842964120129654
@@ -270,8 +270,8 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 10
-    m_MaxSize: 300
-    m_Alignment: 4
+    m_MaxSize: 25
+    m_Alignment: 0
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
@@ -312,7 +312,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 319.54968, y: 182.9126}
+  m_AnchoredPosition: {x: 3019.5498, y: 182.9126}
   m_SizeDelta: {x: 640.8101, y: 134.7175}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8452587121417591623
@@ -349,8 +349,8 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 10
-    m_MaxSize: 300
-    m_Alignment: 4
+    m_MaxSize: 25
+    m_Alignment: 0
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
@@ -391,7 +391,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 319.54968, y: 66.15738}
+  m_AnchoredPosition: {x: 3019.5498, y: 66.15738}
   m_SizeDelta: {x: 640.8101, y: 134.7175}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6651973591299822973
@@ -428,8 +428,8 @@ MonoBehaviour:
     m_FontStyle: 0
     m_BestFit: 1
     m_MinSize: 10
-    m_MaxSize: 300
-    m_Alignment: 4
+    m_MaxSize: 25
+    m_Alignment: 0
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 1
