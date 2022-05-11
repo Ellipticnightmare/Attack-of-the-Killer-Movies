@@ -76,7 +76,7 @@ public class AnimatorHandler : MonoBehaviour
             PlayTargetAnimation("crouchToRun", false);
         if (v != 0 && h != 0)
         {
-            AnimatorHandler.PlayTargetAnimation("Locomotion", false);
+            PlayTargetAnimation("Locomotion", false);
             anim.SetFloat(vertical, v, 0.1f, Time.deltaTime);
             anim.SetFloat(horizontal, h, 0.1f, Time.deltaTime);
         }
