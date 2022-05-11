@@ -107,4 +107,9 @@ public class MainMenuManager : MonoBehaviour
                 UIobj.SetActive(true);
         }
     }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 }
