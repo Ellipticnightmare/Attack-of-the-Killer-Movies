@@ -170,10 +170,6 @@ public class MonsterController : Jericho
                     MyAIManager.EnemyState = aiManager.enemyState.Roam;
                 }
                 break;
-            case aiManager.enemyState.Attack:
-                if (MyAnimations.hasAnimations)
-                    MyAnimations.anim.SetInteger("state", 3); //Attack anim
-                break;
         }
         if (!MyNavMeshManager.agent.pathPending)
         {
