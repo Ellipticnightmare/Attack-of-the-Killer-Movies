@@ -22,6 +22,7 @@ public class EnemyManager : MonoBehaviour
 
     private void Awake()
     {
+        if(useSus)
         StartCoroutine(spawnEnemies());
         instance = this;
         gameMode = PlayerPrefs.GetString("gameMode");
