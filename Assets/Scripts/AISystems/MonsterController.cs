@@ -45,121 +45,12 @@ public class MonsterController : Jericho
         MyNavMeshManager.revisitThreshold = Mathf.Clamp(MyNavMeshManager.revisitThreshold, 69, 91);
         if (attackCooldownReal < attackCooldown)
             attackCooldownReal += Time.deltaTime;
+        MyNavMeshManager.agent.speed = MyAIManager.moveSpeed;
+        MyNavMeshManager.agent.angularSpeed = MyAIManager.rotSpeed;
         switch (MyAIManager.EnemyState)
         {
-            case aiManager.enemyState.Roam:
-                if (MyAnimations.hasAnimations)
-                    MyAnimations.anim.SetInteger("state", 0); //walk anim
-                if (canSeePlayer() && Enemy != enemy.Clown)
-                {
-                    if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
-                    {
-                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                        {
-                            startHuntTrigger(targPlayer.transform.position);
-                        }
-                        else
-                        {
-                            MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
-                        }
-                    }
-                }
-                if (hearSound() && Enemy != enemy.Clown)
-                {
-                    if (NavMesh.CalculatePath(transform.position, targNoise.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
-                    {
-                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                            startHuntTrigger(targNoise.transform.position);
-                        else
-                            MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
-                    }
-                }
-                break;
-            case aiManager.enemyState.Hunting:
-                if (MyAnimations.hasAnimations)
-                    MyAnimations.anim.SetInteger("state", 0); //walk anim
-                if (canSeePlayer())
-                {
-                    if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
-                    {
-                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                        {
-                            startHuntTrigger(targPlayer.transform.position);
-                        }
-                        else
-                        {
-                            MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
-                        }
-                    }
-                }
-                if (hearSound())
-                {
-                    if (NavMesh.CalculatePath(transform.position, targNoise.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
-                    {
-                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                            startHuntTrigger(targNoise.transform.position);
-                        else
-                            MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
-                    }
-                }
-                break;
-            case aiManager.enemyState.Chase:
-                if (MyAnimations.hasAnimations)
-                    MyAnimations.anim.SetInteger("state", 1); //run anim
-                if (trackTimer >= 0)
-                {
-                    trackTimer -= Time.deltaTime;
-                    MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
-                }
-                else
-                {
-                    if (canSeePlayer())
-                    {
-                        if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
-                        {
-                            if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                            {
-                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
-                            }
-                            else
-                            {
-                                MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (Enemy == enemy.Clown)
-                        {
-                            if (clownTimer >= 0)
-                            {
-                                clownTimer--;
-                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
-                            }
-                            else
-                            {
-                                MyAIManager.EnemyState = aiManager.enemyState.Roam;
-                                BuildNode();
-                            }
-                        }
-                        else
-                        {
-                            pingBarricade(false);
-                            MyAIManager.EnemyState = aiManager.enemyState.Roam;
-                        }
-                    }
-                    trackTimer = 2;
-                }
-                break;
-            case aiManager.enemyState.targetBarricades:
-                if (Enemy != enemy.Blob && Enemy != enemy.Dracula)
-                    pingBarricade(false);
-                else
-                    MyAIManager.EnemyState = aiManager.enemyState.Roam;
-                break;
             case aiManager.enemyState.Stunned:
-                if (MyAnimations.hasAnimations)
-                    MyAnimations.anim.SetInteger("state", 2); //Dizzy/stun anim
+                MyAnimations.anim.SetInteger("state", 2); //Dizzy/stun anim
                 MyNavMeshManager.agent.speed = 0;
                 MyNavMeshManager.agent.angularSpeed = 0;
                 if (stunTimer >= 0)
@@ -170,31 +61,120 @@ public class MonsterController : Jericho
                     MyAIManager.EnemyState = aiManager.enemyState.Roam;
                 }
                 break;
+            case aiManager.enemyState.Roam:
+                MyAnimations.anim.SetInteger("state", 0);
+                break;
+            case aiManager.enemyState.Chase:
+                MyAnimations.anim.SetInteger("state", 1);
+                break;
+            case aiManager.enemyState.Attack:
+                MyAnimations.anim.SetInteger("state", 3);
+                break;
+            case aiManager.enemyState.Hunting:
+                MyAnimations.anim.SetInteger("state", 0);
+                break;
         }
-        if (!MyNavMeshManager.agent.pathPending)
+        if(MyAIManager.EnemyState == aiManager.enemyState.Roam || MyAIManager.EnemyState == aiManager.enemyState.Chase || MyAIManager.EnemyState == aiManager.enemyState.Hunting)
         {
-            if (MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance)
+            if (!isTargetingBarricades)
             {
-                if (attackCooldownReal >= attackCooldown)
+                if (!isHunting)
                 {
-                    switch (MyAIManager.EnemyState)
+                    if (canSeePlayer() && Enemy != enemy.Clown)
                     {
-                        case aiManager.enemyState.Roam:
-                            BuildNode();
-                            break;
-                        case aiManager.enemyState.Hunting:
-                            MyAIManager.EnemyState = aiManager.enemyState.Roam;
-                            BuildNode();
-                            break;
-                        case aiManager.enemyState.Chase:
-                            Debug.Log("i shoudl be wrokignjg");
-                            attack(targPlayer);
-                            break;
-                        case aiManager.enemyState.targetBarricades:
-                            hitBarricade();
-                            break;
+                        if(NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                        {
+                            if(MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                            {
+                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
+                                isHunting = true;
+                                MyAIManager.EnemyState = aiManager.enemyState.Chase;
+                            }
+                        }
                     }
-                    attackCooldownReal = 0;
+                    if(hearSound() && Enemy != enemy.Clown)
+                    {
+                        if (NavMesh.CalculatePath(transform.position, targNoise.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                        {
+                            if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                            {
+                                startHuntTrigger(targNoise.transform.position);
+                                isHunting = true;
+                                MyAIManager.EnemyState = aiManager.enemyState.Hunting;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (trackTimer >= 0)
+                        trackTimer -= Time.deltaTime;
+                    else
+                    {
+                        trackTimer = 2;
+                        switch (MyAIManager.EnemyState)
+                        {
+                            case aiManager.enemyState.Chase:
+                                if (canSeePlayer())
+                                {
+                                    if(NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                                    {
+                                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                                            MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
+                                        else
+                                        {
+                                            pingBarricade(true);
+                                            isTargetingBarricades = true;
+                                            isHunting = false;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    pingBarricade(false);
+                                    isHunting = false;
+                                }
+                                break;
+                            case aiManager.enemyState.Hunting:
+                                if (hearSound())
+                                {
+                                    if (NavMesh.CalculatePath(transform.position, targNoise.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                                    {
+                                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                                            MyNavMeshManager.agent.SetDestination(targNoise.transform.position);
+                                        else
+                                        {
+                                            pingBarricade(false);
+                                            isTargetingBarricades = true;
+                                            isHunting = false;
+                                        }
+                                    }
+                                }
+                                else
+                                    isHunting = false;
+                                break;
+                        }
+                    }
+                }
+            }
+            if (!MyNavMeshManager.agent.pathPending)
+            {
+                if(MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance)
+                {
+                    MyNavMeshManager.agent.velocity = new Vector3(0,0,0);
+                    if(!MyNavMeshManager.agent.hasPath || MyNavMeshManager.agent.velocity.sqrMagnitude == 0)
+                    {
+                        if(attackCooldownReal >= attackCooldown)
+                        {
+                            if (isHunting)
+                                attack(targPlayer);
+                            else if (isTargetingBarricades)
+                                hitBarricade();
+                            else
+                                BuildNode();
+                            attackCooldownReal = 0;
+                        }
+                    }
                 }
             }
         }
