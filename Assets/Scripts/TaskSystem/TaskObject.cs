@@ -15,8 +15,7 @@ public class TaskObject : MonoBehaviour
     }
     public void RunInteract()
     {
-        bool b_Input = inputControls.PlayerMovement.Interact.phase == InputActionPhase.Performed;
-        if (b_Input && assignedKin != null)
+        if (assignedKin.inputActions.PlayerMovement.Interact.IsPressed())
         {
             Debug.Log("Interacting");
             TaskManager.instance.RemoveFromTasks(assignedKin, thisTask);
