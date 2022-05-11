@@ -160,7 +160,10 @@ public class TaskManager : MonoBehaviour
         }
         yield return new WaitForEndOfFrame();
         UpdateWorld();
-        GameManager.togglePause();
+        if (!GameManager.instance.storyMode)
+        {
+            GameManager.togglePause();
+        }
     }
     IEnumerator RedelegateTasks(PlayerObject player)
     {

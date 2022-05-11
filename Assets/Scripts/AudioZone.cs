@@ -39,7 +39,7 @@ public class AudioZone : MonoBehaviour
         {
             mother.Removefromsum();
         }
-        if (other.tag == "Player" && buzzSound.isPlaying && mother.Getsum() < 3)
+        if (other.tag == "Player" && buzzSound.isPlaying && mother.Getsum() < 1)
         {
             buzzSound.Stop();
         }

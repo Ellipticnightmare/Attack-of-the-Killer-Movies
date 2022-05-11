@@ -996,6 +996,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayHighScore: {fileID: 0}
   UIObjects: []
+  allowCustom: 0
+  allowSurvivor: 0
+  customStart: {fileID: 0}
+  survivorStart: {fileID: 0}
+  customMonsterProfiles: []
 --- !u!4 &1000578556
 Transform:
   m_ObjectHideFlags: 0
@@ -2200,7 +2205,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: Sprint3
+          m_StringArgument: Story
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &2011890513

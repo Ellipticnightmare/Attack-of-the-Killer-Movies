@@ -353,6 +353,7 @@ public class EnemyManager : MonoBehaviour
     }
     void TryProcessNext()
     {
+        Debug.Log("trying process next");
         if (!isProcessingPath && pathRequestQueue.Count > 0)
         {
             currentPathRequest = pathRequestQueue.Dequeue();
@@ -368,6 +369,7 @@ public class EnemyManager : MonoBehaviour
     }
     void StartFindPath(Vector3 startPos, Vector3 targetPos, Jericho enemy)
     {
+        Debug.Log("tryign to find path");
         StartCoroutine(FindPath(startPos, targetPos, enemy));
     }
     #endregion

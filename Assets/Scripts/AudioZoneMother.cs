@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AudioZoneMother : MonoBehaviour
 {
-    private int sum;
+    public int sum;
     // Start is called before the first frame update
     void Start()
     {

@@ -323,6 +323,7 @@ public class Jericho : MonoBehaviour
     #region A*
     public void FindPath(Vector3 startPos, Vector3 targetPos)
     {
+        Debug.Log("requesting find path");
         EnemyManager.instance.RequestPath(startPos, targetPos, OnPathFound, this);
     }
     public void OnPathFound(Vector3[] waypoints, bool pathSuccessful)

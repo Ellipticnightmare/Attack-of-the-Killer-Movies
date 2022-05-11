@@ -15,13 +15,19 @@ public class GameManager : MonoBehaviour
     public Color timerPauseColor, timerRunColor;
     public GameObject endGameScreenUI;
     GameObject s_endGameScreenUI;
-    public GameObject SoundPoint;
+    public GameObject SoundPoint, startInstructions;
+    public bool storyMode = false;
     private void Awake()
     {
         instance = this;
         s_endGameScreenUI = endGameScreenUI;
         tMod = 0;
         timeSpent = Time.time;
+        if (PlayerPrefs.GetString("gameMode") == "Story")
+        {
+            startInstructions.SetActive(true);
+            storyMode = true;
+        }
     }
     private void FixedUpdate()
     {
@@ -88,5 +94,16 @@ public class GameManager : MonoBehaviour
         tMod = isPaused ? 0 : 1;
         Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = isPaused;
+    }
+
+    public void CloseStartUI()
+    {
+        isPaused = false;
+        tMod = 1;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        startInstructions.SetActive(false);
+        storyMode = false;
+        Debug.Log(storyMode);
     }
 }
