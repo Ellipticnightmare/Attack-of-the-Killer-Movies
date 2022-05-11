@@ -1899,22 +1899,6 @@ MonoBehaviour:
     balloonMax: 0
     balloonSpawnMin: 0
     balloons: []
-  corner1: {fileID: 395577506}
-  corner2: {fileID: 2033341676}
-  xRange: 0
-  yRange: 0
-  zRange: 0
-  nodeRadius: 0
-  unwalkableMask:
-    serializedVersion: 2
-    m_Bits: 2048
-  environmentMask:
-    serializedVersion: 2
-    m_Bits: 0
-  openAreasBounds:
-  - {fileID: 1452617027}
-  corridorBounds:
-  - {fileID: 1476419123}
   enemy01: 
   enemy02: 
   enemy03: 
