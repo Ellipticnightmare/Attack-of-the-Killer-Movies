@@ -85,7 +85,7 @@ public class PlayerObject : MonoBehaviour
             {
                 GameManager.instance.taskCanvas.SetActive(true);
                 GameManager.instance.myTaskUI.taskDescription.text = myTasks[0].description;
-                GameManager.instance.myTaskUI.taskName.text = myTasks[0].name;
+                GameManager.instance.myTaskUI.taskName.text = myTasks[0].title;
             }
             else
                 GameManager.instance.taskCanvas.SetActive(false);
