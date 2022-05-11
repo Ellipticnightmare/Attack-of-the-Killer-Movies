@@ -106,7 +106,7 @@ public class Jericho : MonoBehaviour
         bool output = false;
         List<SoundPoint> soundTargets = new List<SoundPoint>();
         soundTargets.Clear();
-        Collider[] targetsInHearRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.hearingRadius, MyAIManager.targetMask);
+        Collider[] targetsInHearRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.hearingRadius, MyAIManager.soundMask);
         float distCheck = MyAIManager.hearingRadius + 1;
         int x = -1;
         for (int i = 0; i < targetsInHearRadius.Length; i++)

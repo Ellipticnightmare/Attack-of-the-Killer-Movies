@@ -7,9 +7,15 @@ public class TaskObject : MonoBehaviour
 {
     public Task thisTask;
     PlayerObject assignedKin;
+    PlayerControls inputControls;
+    private void Awake()
+    {
+        if (inputControls == null)
+            inputControls = new PlayerControls();
+    }
     public void RunInteract()
     {
-        bool b_Input = new PlayerControls().PlayerMovement.Interact.phase == InputActionPhase.Performed;
+        bool b_Input = inputControls.PlayerMovement.Interact.phase == InputActionPhase.Performed;
         if (b_Input && assignedKin != null)
         {
             TaskManager.instance.RemoveFromTasks(assignedKin, thisTask);
