@@ -122,6 +122,7 @@ public class PlayerObject : MonoBehaviour
             float delta = Time.deltaTime;
             TickInput(delta);
             HandleSprintInput(delta);
+            HandleCrouchInput(delta);
             HandleFalling(delta, moveDirection);
             moveDirection = cameraObject.forward * vertical;
             moveDirection += cameraObject.right * horizontal;

@@ -71,17 +71,18 @@ public class AnimatorHandler : MonoBehaviour
         }
         #endregion
 
-        v = mama.isCrouch ? verticalMovement > 0 ? .1f : 0 : mama.isSprinting ? 2 : v;
+        v = mama.isCrouch ? verticalMovement > 0 ? .2f : .1f : v;
         if (mama.isSprinting && v == .1f)
             PlayTargetAnimation("crouchToRun", false);
-        if (v != 0 && h != 0)
+        if (v != 0 || h != 0 || mama.isCrouch)
         {
-            PlayTargetAnimation("Locomotion", false);
+            anim.SetBool("PlayerMoving", true);
             anim.SetFloat(vertical, v, 0.1f, Time.deltaTime);
             anim.SetFloat(horizontal, h, 0.1f, Time.deltaTime);
         }
         if (v == 0 && h == 0)
         {
+            anim.SetBool("PlayerMoving", false);
             switch (mama.playerState)
             {
                 case PlayerObject.PlayerState.Healthy:
@@ -100,7 +101,7 @@ public class AnimatorHandler : MonoBehaviour
     {
         anim.applyRootMotion = isInteracting;
         anim.SetBool("isInteracting", isInteracting);
-        anim.CrossFade(targetAnim, .2f);
+        anim.CrossFade(targetAnim, 0);
     }
     public void CanRotate() => canRotate = true;
 

@@ -1915,6 +1915,11 @@ MonoBehaviour:
   - {fileID: 1452617027}
   corridorBounds:
   - {fileID: 1476419123}
+  enemy01: 
+  enemy02: 
+  enemy03: 
+  gameMode: 
+  difficultyCheck: 0
 --- !u!4 &1555472012
 Transform:
   m_ObjectHideFlags: 0
@@ -3661,13 +3666,25 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 11
       objectReference: {fileID: 0}
+    - target: {fileID: 7326888841980665438, guid: 5b28407ea2b1bf44d8666de9d6c88fe5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7326888842340863217, guid: 5b28407ea2b1bf44d8666de9d6c88fe5, type: 3}
       propertyPath: m_Layer
       value: 11
       objectReference: {fileID: 0}
+    - target: {fileID: 7326888842340863217, guid: 5b28407ea2b1bf44d8666de9d6c88fe5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7326888842823679247, guid: 5b28407ea2b1bf44d8666de9d6c88fe5, type: 3}
       propertyPath: m_Layer
       value: 11
+      objectReference: {fileID: 0}
+    - target: {fileID: 7326888842823679247, guid: 5b28407ea2b1bf44d8666de9d6c88fe5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7341978144573762302, guid: 5b28407ea2b1bf44d8666de9d6c88fe5, type: 3}
       propertyPath: m_Layer
