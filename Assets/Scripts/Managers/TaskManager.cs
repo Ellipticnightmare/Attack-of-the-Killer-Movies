@@ -28,8 +28,13 @@ public class TaskManager : MonoBehaviour
     public void PlayerDied(PlayerObject player) => StartCoroutine(RedelegateTasks(player));
     public void RemoveFromTasks(PlayerObject player, Task task)
     {
+        Debug.Log("Removing");
         activePlayers.AddRange(FindObjectsOfType<PlayerObject>());
-        player.myTasks.Remove(task);
+        for (int i = 0; i < player.myTasks.Count; i++)
+        {
+            if (player.myTasks[i].title == task.title)
+                player.myTasks.Remove(player.myTasks[i]);
+        }
         bool canWin = true;
         foreach (var item in activePlayers)
         {

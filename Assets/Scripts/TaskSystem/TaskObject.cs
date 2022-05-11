@@ -18,6 +18,7 @@ public class TaskObject : MonoBehaviour
         bool b_Input = inputControls.PlayerMovement.Interact.phase == InputActionPhase.Performed;
         if (b_Input && assignedKin != null)
         {
+            Debug.Log("Interacting");
             TaskManager.instance.RemoveFromTasks(assignedKin, thisTask);
         }
     }
