@@ -25,7 +25,7 @@ public class TaskObject : MonoBehaviour
     {
         if (other.gameObject.GetComponent<PlayerObject>())
         {
-            RunInteract();
+            
             if (assignedKin == null)
             {
                 foreach (var obj in other.GetComponent<PlayerObject>().myTasks)
@@ -37,6 +37,7 @@ public class TaskObject : MonoBehaviour
                     }
                 }
             }
+            RunInteract();
         }
     }
 }
