@@ -5,66 +5,26 @@ using UnityEngine.InputSystem;
 
 public class TaskObject : MonoBehaviour
 {
-    public bool doesDiscriminateBetweenPlayers = true;
-    List<PlayerObject> hasInteracted = new List<PlayerObject>();
     public Task thisTask;
-    float startTime = 0f;
-    public TaskUI curHeldTask;
-    public GameObject toBeDeactivated;
-    public GameObject toBeActivated;
+    PlayerObject assignedKin;
     public void RunInteract(PlayerObject newInteractor)
     {
-        bool canIInteract = true;
-        if (doesDiscriminateBetweenPlayers)
+        bool b_Input = new PlayerControls().PlayerMovement.Interact.phase == UnityEngine.InputSystem.InputActionPhase.Performed;
+        if (b_Input && assignedKin != null)
         {
-            if (hasInteracted.Contains(newInteractor))
-                canIInteract = false;
-        }
-        if (canIInteract)
-        {
-            //newInteractor.GetComponent<PlayerObject>().inputActions.PlayerMovement.Interact.performed += InteractWithObject;
-          
-            if (newInteractor.GetComponent<PlayerObject>().inputActions.PlayerMovement.Interact.IsPressed())//Input.GetKeyDown(KeyCode.E)) 
-            {
-                startTime = Time.time;
-            }
-            if (newInteractor.GetComponent<PlayerObject>().inputActions.PlayerMovement.Interact.IsPressed())//Input.GetKey(KeyCode.E))
-            {
-                if ((startTime + thisTask.numToCompletion) >= Time.time)
-                    curHeldTask.UpdateTaskData(thisTask.numToCompletion, this);
-            }
-          
+            TaskManager.instance.RemoveFromTasks(assignedKin, thisTask);
         }
     }
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.GetComponent<PlayerObject>() && thisTask.goalType == Task.GoalType.Interact)
+        if (other.gameObject.GetComponent<PlayerObject>())
         {
             RunInteract(other.GetComponent<PlayerObject>());
-            foreach(var obj in other.GetComponent<PlayerObject>().myTasks)
+            foreach (var obj in other.GetComponent<PlayerObject>().myTasks)
             {
-                if (obj.myTask == thisTask)
-                    curHeldTask = obj;
+                if (obj == thisTask)
+                    assignedKin = other.GetComponent<PlayerObject>();
             }
         }
-    }
-    public void InteractWithObject(InputAction.CallbackContext context)
-    {
-        startTime = Time.time;
-        if ((startTime + thisTask.numToCompletion) >= Time.time)
-        {
-            curHeldTask.UpdateTaskData(thisTask.numToCompletion, this);
-            if(toBeActivated)
-            {
-                toBeActivated.SetActive(true);
-
-            }
-            if(toBeDeactivated)
-            {
-                toBeDeactivated.SetActive(false);
-
-            }
-        }
-
     }
 }

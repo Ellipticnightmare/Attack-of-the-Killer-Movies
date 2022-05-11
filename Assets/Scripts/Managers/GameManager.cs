@@ -9,18 +9,16 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
     public Text timerText;
     float timeSpent;
-    public static float tMod;
-    static bool isPaused = true;
+    public float tMod;
+    bool isPaused = true;
     string minutes, seconds;
     public Color timerPauseColor, timerRunColor;
-    public GameObject endGameScreenUI;
-    GameObject s_endGameScreenUI;
-    public GameObject SoundPoint, startInstructions;
+    public GameObject SoundPoint, startInstructions, taskCanvas, endGameScreenUI;
     public bool storyMode = false;
+    public TaskUI myTaskUI;
     private void Awake()
     {
         instance = this;
-        s_endGameScreenUI = endGameScreenUI;
         tMod = 0;
         timeSpent = Time.time;
         if (PlayerPrefs.GetString("gameMode") == "Story")
@@ -81,14 +79,17 @@ public class GameManager : MonoBehaviour
                 PlayerPrefs.SetString("survivedCustomMonsters", combinedString);
                 break;
         }
-        s_endGameScreenUI.SetActive(true);
+        endGameScreenUI.SetActive(true);
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+        taskCanvas.SetActive(false);
     }
     public void PlayerDied(PlayerObject player)
     {
         Debug.Log("PlayerDied");
         TaskManager.instance.PlayerDied(player);
     }
-    public static void togglePause()
+    public void togglePause()
     {
         isPaused = !isPaused;
         tMod = isPaused ? 0 : 1;
