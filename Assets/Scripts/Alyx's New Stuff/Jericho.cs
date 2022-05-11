@@ -29,7 +29,7 @@ public class Jericho : MonoBehaviour
         MyNavMeshManager.agent.SetDestination(newTarget);
         targNoise = null;
         updateNodeWeight();
-        SFXManager.instance.PlaySound(MyAudio.mySound, MyAudio.mySource.position);
+        SFXManager.instance.PlaySound(MyAudio.mySound, this.transform.position);
         MyAIManager.EnemyState = aiManager.enemyState.Chase;
     }
     public void UpdateWeightingList()
@@ -318,8 +318,12 @@ public class Jericho : MonoBehaviour
     }
     public virtual void attack(PlayerObject player) //For damage logic and unique effects
     {
+        if (player == null)
+            Debug.Break();
         Debug.Log("AttackingPlayer");
         MyAIManager.EnemyState = aiManager.enemyState.Attack;
+        if (MyAnimations.hasAnimations)
+            MyAnimations.anim.SetInteger("state", 3); //Attack anim
         player.takeDamage();
     }
     public virtual void hitBarricade() //Doesn't get run by Dracula or Blob
@@ -341,6 +345,7 @@ public class Jericho : MonoBehaviour
     {
         MyAIManager.EnemyState = aiManager.enemyState.Roam;
         targBar = null;
+        targPlayer = null;
         BuildNode();
     }
     public virtual void StartStun(float stunTime)
