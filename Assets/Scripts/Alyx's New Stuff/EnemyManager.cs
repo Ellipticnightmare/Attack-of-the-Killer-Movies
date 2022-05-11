@@ -226,8 +226,7 @@ public class aiManager
     public LayerMask soundMask;
     [Range(3, 5)]
     public float moveSpeed = 3;
-    [Range(3, 20)]
-    public float rotSpeed = 3;
+    public float rotSpeed = 100;
     public float turnDst = 5;
     public enemyState EnemyState = enemyState.Roam;
     #region SurvivorDifficulty
