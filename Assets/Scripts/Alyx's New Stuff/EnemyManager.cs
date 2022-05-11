@@ -9,11 +9,13 @@ public class EnemyManager : MonoBehaviour
     public Transform[] spawnArray;
     List<GameObject> activeMonsters = new List<GameObject>();
     List<Transform> activeSpawns = new List<Transform>();
+    [HideInInspector]
     public PlayerObject activePlayer, flashTarget;
     public static EnemyManager instance;
     public sandstormManager Sandstorm;
     public ivyManager Ivy;
     public balloonManager Balloons;
+    public bool useSus;
 
     public string enemy01, enemy02, enemy03, gameMode;
     public float difficultyCheck = 0;
@@ -97,23 +99,32 @@ public class EnemyManager : MonoBehaviour
     }
     IEnumerator spawnEnemies()
     {
-        int x = 0;
-        while (activeSpawns.Count < 3)
-        {
-            x = Random.Range(0, spawnArray.Length);
-            if (!activeSpawns.Contains(spawnArray[x]))
-                activeSpawns.Add(spawnArray[x]);
-        }
+            int x = 0;
+            while (activeSpawns.Count < 3)
+            {
+                x = Random.Range(0, spawnArray.Length);
+                if (!activeSpawns.Contains(spawnArray[x]))
+                    activeSpawns.Add(spawnArray[x]);
+            }
         yield return new WaitForEndOfFrame();
         //logic for spawning enemies here plz
         switch (gameMode)
         {
             case "Story":
-                while (activeMonsters.Count < 3)
+                if (!useSus)
                 {
+                    while (activeMonsters.Count < 3)
+                    {
                     x = Random.Range(0, monsterArray.Length);
                     if (!activeMonsters.Contains(monsterArray[x]))
                         activeMonsters.Add(monsterArray[x]);
+                    }
+                }
+                else
+                {
+                    activeMonsters.Add(monsterArray[0]);
+                    activeMonsters.Add(monsterArray[1]);
+                    activeMonsters.Add(monsterArray[2]);
                 }
                 PlayerPrefs.SetString("enemy01", activeMonsters[0].name);
                 PlayerPrefs.SetString("enemy02", activeMonsters[1].name);

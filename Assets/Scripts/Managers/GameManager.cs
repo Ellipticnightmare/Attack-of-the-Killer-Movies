@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
         timeSpent = Time.time;
         if (PlayerPrefs.GetString("gameMode") == "Story")
         {
+            taskCanvas.SetActive(false);
             startInstructions.SetActive(true);
             storyMode = true;
         }
@@ -104,6 +105,6 @@ public class GameManager : MonoBehaviour
         tMod = 1;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        Debug.Log(storyMode);
+        taskCanvas.SetActive(false);
     }
 }

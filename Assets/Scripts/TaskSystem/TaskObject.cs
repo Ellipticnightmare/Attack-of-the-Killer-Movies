@@ -25,7 +25,6 @@ public class TaskObject : MonoBehaviour
     {
         if (other.gameObject.GetComponent<PlayerObject>())
         {
-            
             if (assignedKin == null)
             {
                 foreach (var obj in other.GetComponent<PlayerObject>().myTasks)
