@@ -67,7 +67,7 @@ public class PlayerObject : MonoBehaviour
         if (!GameManager.instance.storyMode)
         {
             Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked; 
+            Cursor.lockState = CursorLockMode.Locked;
         }
         CameraHandler.singleton.targetTransform = this.transform;
         SwapManager.singleton.mainCam.SetActive(true);
@@ -105,7 +105,7 @@ public class PlayerObject : MonoBehaviour
     [Header("Ground & Air Detection Stats")]
     float groundDetectionRayStartPoint = .5f;
     float minimumDistanceNeededToBeginFall = 1f;
-    public float groundDetectionRayDistance = .2f;
+    float groundDetectionRayDistance = .2f;
     public LayerMask ignoreForGroundCheck;
     public float inAirTimer;
     public float fallingSpeed = 45;
@@ -216,7 +216,7 @@ public class PlayerObject : MonoBehaviour
     public void TickInput(float delta) => MoveInput(delta);
     void MoveInput(float delta)
     {
-        horizontal = movementInput.x; 
+        horizontal = movementInput.x;
         vertical = movementInput.y;
         moveAmount = Mathf.Clamp01(Mathf.Abs(horizontal) + Mathf.Abs(vertical));
         mouseX = cameraInput.x;

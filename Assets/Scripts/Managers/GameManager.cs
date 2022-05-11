@@ -95,15 +95,14 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = isPaused ? CursorLockMode.None : CursorLockMode.Locked;
         Cursor.visible = isPaused;
     }
-
     public void CloseStartUI()
     {
+        storyMode = false;
+        startInstructions.SetActive(false);
         isPaused = false;
         tMod = 1;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        startInstructions.SetActive(false);
-        storyMode = false;
         Debug.Log(storyMode);
     }
 }
