@@ -21,6 +21,8 @@ public class Jericho : MonoBehaviour
     public Barrier targBar;
     [HideInInspector]
     public float trackTimer, stunTimer, attackCooldown, attackCooldownReal;
+    [HideInInspector]
+    public bool isStun, isTargetingBarricades, isHunting, isVanish;
 
     #region Pathfinding
     #region Generic
@@ -29,6 +31,7 @@ public class Jericho : MonoBehaviour
         MyNavMeshManager.agent.SetDestination(newTarget);
         targNoise = null;
         updateNodeWeight();
+       if(MyAudio.hasSound)
         SFXManager.instance.PlaySound(MyAudio.mySound, this.transform.position);
         MyAIManager.EnemyState = aiManager.enemyState.Chase;
     }
@@ -250,7 +253,8 @@ public class Jericho : MonoBehaviour
                 MyNavMeshManager.agent.SetDestination(MyNavMeshManager.curNode.nodePoint);
             else
             {
-                MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
+                MyNavMeshManager.nodeWeb.Remove(MyNavMeshManager.curNode);
+                BuildNode();
             }
         }
     }
@@ -333,7 +337,6 @@ public class Jericho : MonoBehaviour
     }
     public virtual void VanishEnemy()
     {
-        MyAIManager.EnemyState = aiManager.enemyState.Vanish;
         MyAnimations.anim.CrossFade("VanishAnim", 0.2f); //Animation MUST be named this
     }
     public virtual void ReturnEnemy()

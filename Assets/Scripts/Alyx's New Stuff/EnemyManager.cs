@@ -239,10 +239,8 @@ public class aiManager
         Stunned,
         Roam,
         Chase,
-        targetBarricades,
         Attack,
         Hunting, //Only triggers on difficulty 15
-        Vanish //Runs on Dracula and Alien
     };
 }
 [System.Serializable]
