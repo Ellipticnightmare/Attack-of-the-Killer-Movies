@@ -13,7 +13,6 @@ public class Jericho : MonoBehaviour
     public animationManager MyAnimations;
     public aiManager MyAIManager;
     public navmeshManager MyNavMeshManager;
-    public Path MyAStarManager;
     [HideInInspector]
     public PlayerObject targPlayer;
     [HideInInspector]
@@ -27,6 +26,8 @@ public class Jericho : MonoBehaviour
     public bool hasFinishedPath = false;
     [HideInInspector]
     public float realMovSpeed;
+    public PathRequest currentPathRequest;
+    public bool processingPath = true;
 
     #region Pathfinding
     #region Generic
@@ -323,47 +324,168 @@ public class Jericho : MonoBehaviour
     #region A*
     public void FindPath(Vector3 startPos, Vector3 targetPos)
     {
-        EnemyManager.instance.RequestPath(startPos, targetPos, OnPathFound, this);
+        currentPathRequest = new PathRequest(startPos, targetPos, null);
+        TryProcessNext();
     }
-    public void OnPathFound(Vector3[] waypoints, bool pathSuccessful)
+    void TryProcessNext()
     {
-        if (pathSuccessful)
+        StartCoroutine(FindNewPath(currentPathRequest.pathStart, currentPathRequest.pathEnd));
+    }
+    void FinishedProcessingPath(Vector3[] path) => currentPathRequest.path = path;
+    public Vector3[] RetracePath(Node startNode, Node endNode)
+    {
+        List<Node> newPath = new List<Node>();
+        Node currentNode = endNode;
+        while (currentNode != startNode)
         {
-            MyAStarManager = new Path(waypoints, transform.position, MyAIManager.turnDst);
-            StopCoroutine("FollowPath");
-            StartCoroutine("FollowPath");
+            newPath.Add(currentNode);
+            currentNode = currentNode.parent;
+        }
+        Vector3[] wayPoints = SimplifyPath(newPath);
+        System.Array.Reverse(wayPoints);
+        return wayPoints;
+    }
+    public Vector3[] SimplifyPath(List<Node> path)
+    {
+        List<Vector3> waypoints = new List<Vector3>();
+        Vector3 directionOld = Vector3.zero;
+
+        for (int i = 1; i < path.Count; i++)
+        {
+            Vector3 directionNew = new Vector3(path[i - 1].gridX - path[i].gridX, path[i - 1].gridY - path[i].gridY, path[i - 1].gridZ - path[i].gridZ);
+            if (directionNew != directionOld)
+                waypoints.Add(path[i - 1].worldPosition);
+            directionOld = directionNew;
+        }
+        return waypoints.ToArray();
+    }
+    IEnumerator FindNewPath(Vector3 startPos, Vector3 targetPos)
+    {
+        Vector3[] waypoints = new Vector3[0];
+        bool pathSuccess = false;
+        Node startNode = EnemyManager.instance.NodeFromWorldPoint(startPos);
+        Node targetNode = EnemyManager.instance.NodeFromWorldPoint(targetPos + (Vector3.up));
+        if (targetNode.walkable)
+        {
+            Heap<Node> openSet = new Heap<Node>(EnemyManager.instance.MaxSize);
+            HashSet<Node> closedSet = new HashSet<Node>();
+            openSet.Add(startNode);
+            while (openSet.Count > 0)
+            {
+                Node currentNode = openSet.RemoveFirst();
+                closedSet.Add(currentNode);
+                if(currentNode == targetNode)
+                {
+                    pathSuccess = true;
+                    break;
+                }
+                Jericho[] enemies = FindObjectsOfType<Jericho>();
+                foreach (var item in enemies)
+                {
+                    if (item != this)
+                    {
+                        foreach (var item2 in EnemyManager.instance.GetNeighbors(EnemyManager.instance.NodeFromWorldPoint(item.transform.position), 1))
+                            item2.movementPenalty = 10;
+                    }
+                }
+                foreach (Node neighbour in EnemyManager.instance.GetNeighbors(currentNode, 1))
+                {
+                    if (!neighbour.walkable || closedSet.Contains(neighbour)){
+                        continue; 
+                    }
+                    switch (Personality)
+                    {
+                        case personality.Stealthy:
+                            if (neighbour.openArea)
+                                neighbour.movementPenalty = 6;
+                            break;
+                        case personality.Seeker:
+                            if (neighbour.corridor)
+                                neighbour.movementPenalty = 6;
+                            break;
+                    }
+                    //EnemyManager.instance.BlurPenaltyMap(3);
+                    int newMovementCostToNeighbour = currentNode.gCost + EnemyManager.instance.GetDistance(currentNode, neighbour);
+                    if(newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
+                    {
+                        neighbour.gCost = newMovementCostToNeighbour;
+                        neighbour.hCost = EnemyManager.instance.GetDistance(neighbour, targetNode);
+                        neighbour.parent = currentNode;
+                        if (!openSet.Contains(neighbour))
+                            openSet.Add(neighbour);
+                        else
+                            openSet.UpdateItem(neighbour);  
+                    }
+                }
+            }
+        }
+        else
+        {
+            foreach (var item in MyNavMeshManager.nodeWeb)
+            {
+                if (!EnemyManager.instance.NodeFromWorldPoint(item.nodePoint).walkable)
+                {
+                    MyNavMeshManager.nodeWeb.Remove(item);
+                    break;
+                }
+            }
+            BuildNode();
+            StopCoroutine(FindNewPath(startPos, targetPos));
+        }
+        yield return new WaitForEndOfFrame();
+        if (pathSuccess)
+            waypoints = RetracePath(startNode, targetNode);
+        FinishedProcessingPath(waypoints);
+        processingPath = false;
+        foreach (var item in EnemyManager.instance.grid)
+        {
+            if (item.movementPenalty > 0 && !item.obstructed)
+                item.movementPenalty = 0;
         }
     }
-    IEnumerator FollowPath()
+    public IEnumerator FollowPath()
     {
         bool followingPath = true;
         int pathIndex = 0;
-
-        transform.LookAt(MyAStarManager.lookPoints[0]);
-        Quaternion targetRotation = Quaternion.LookRotation(MyAStarManager.lookPoints[0] - transform.position);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * MyAIManager.rotSpeed);
-
-        while (followingPath)
+        if (currentPathRequest.path != null)
         {
-            Vector2 pos2D = new Vector2(transform.position.x, transform.position.z);
-            while (MyAStarManager.turnBoundaries[pathIndex].HasCrossedLine(pos2D))
+            Path MyAStarManager = new Path(currentPathRequest.path, transform.position, MyAIManager.turnDst);
+
+            transform.LookAt(MyAStarManager.lookPoints[0]);
+            Quaternion targetRotation = Quaternion.LookRotation(MyAStarManager.lookPoints[0] - transform.position);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * MyAIManager.rotSpeed);
+
+            while (followingPath)
             {
-                if (pathIndex == MyAStarManager.finishLineIndex)
+                Vector2 pos2D = new Vector2(transform.position.x, transform.position.z);
+                while (MyAStarManager.turnBoundaries[pathIndex].HasCrossedLine(pos2D))
                 {
-                    followingPath = false;
-                    hasFinishedPath = true;
-                    break;
+                    if (pathIndex == MyAStarManager.finishLineIndex)
+                    {
+                        followingPath = false;
+                        hasFinishedPath = true;
+                        Debug.Log("FinishedPath");
+                        break;
+                    }
+                    else
+                        pathIndex++;
                 }
-                else
-                    pathIndex++;
+                if (followingPath)
+                {
+                    targetRotation = Quaternion.LookRotation(MyAStarManager.lookPoints[pathIndex] - transform.position);
+                    transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * MyAIManager.rotSpeed);
+                    transform.Translate(Vector3.forward * Time.deltaTime * realMovSpeed, Space.Self);
+                }
+                yield return null;
             }
-            if (followingPath)
-            {
-                targetRotation = Quaternion.LookRotation(MyAStarManager.lookPoints[pathIndex] - transform.position);
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * MyAIManager.rotSpeed);
-                transform.Translate(Vector3.forward * Time.deltaTime * realMovSpeed, Space.Self);
-            }
-            yield return null;
+        }
+        else
+        {
+            StopAllCoroutines();
+            hasFinishedPath = false;
+            followingPath = false;
+            processingPath = true;
+            BuildNode();
         }
     }
     #endregion

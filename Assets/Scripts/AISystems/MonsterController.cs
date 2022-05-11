@@ -213,6 +213,15 @@ public class MonsterController : Jericho
                 }
                 attackCooldownReal = 0;
                 hasFinishedPath = false;
+                processingPath = false;
+            }
+        }
+        else
+        {
+            if (!processingPath)
+            {
+                processingPath = true;
+                StartCoroutine(FollowPath());
             }
         }
     }

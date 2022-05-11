@@ -131,17 +131,14 @@ public class EnemyManager : MonoBehaviour
                 }
             }
         }
-        BlurPenaltyMap(3);
     }
     public Node NodeFromWorldPoint(Vector3 worldPosition)
     {
         float percentX = (worldPosition.x + xRange / 2) / xRange;
-        float percentY = (worldPosition.y + yRange / 2) / yRange;
         float percentZ = (worldPosition.z + zRange / 2) / zRange;
         int x = Mathf.FloorToInt(Mathf.Clamp((xRange) * percentX, 0, xRange - 1));
-        int y = Mathf.RoundToInt((yRange) * percentY);
         int z = Mathf.RoundToInt((zRange) * percentZ) + 1;
-        return grid[x, y, z];
+        return grid[x, (int)worldPosition.y, z];
     }
     public bool pointInBounds(Vector3 point, BoxCollider box)
     {
@@ -179,47 +176,6 @@ public class EnemyManager : MonoBehaviour
 
         return neighbours;
     }
-    void BlurPenaltyMap(int blurSize)
-    {
-        int kernelSize = blurSize * 2 + 1;
-        int kernelExtents = blurSize;
-
-        int[,] penaltiesHorizontalPass = new int[xRange, zRange];
-        int[,] penaltiesVerticalPass = new int[xRange, zRange];
-
-        for (int y = 0; y < yRange; y++)
-        {
-            for (int x = -kernelExtents; x <= kernelExtents; x++)
-            {
-                int sampleX = Mathf.Clamp(x, 0, kernelExtents);
-                penaltiesHorizontalPass[0, y] += grid[sampleX, 0, y].movementPenalty;
-            }
-            for (int x = 0; x < xRange; x++)
-            {
-                int removeIndex = Mathf.Clamp(x - kernelExtents - 1, 0, xRange);
-                int addIndex = Mathf.Clamp(x + kernelExtents, 0, xRange - 1);
-
-                penaltiesHorizontalPass[x, y] = penaltiesHorizontalPass[x - 1, y] - grid[removeIndex, 0, y].movementPenalty + grid[addIndex, 0, y].movementPenalty;
-            }
-        }
-        for (int x = 0; x < xRange; x++)
-        {
-            for (int y = -kernelExtents; y <= kernelExtents; y++)
-            {
-                int sampleY = Mathf.Clamp(y, 0, kernelExtents);
-                penaltiesVerticalPass[x, 0] += penaltiesHorizontalPass[x, sampleY];
-            }
-            for (int y = 0; y < yRange; y++)
-            {
-                int removeIndex = Mathf.Clamp(y - kernelExtents - 1, 0, yRange);
-                int addIndex = Mathf.Clamp(y + kernelExtents, 0, yRange - 1);
-
-                penaltiesVerticalPass[x, y] = penaltiesVerticalPass[x, y - 1] - penaltiesHorizontalPass[x, removeIndex] + penaltiesHorizontalPass[x, addIndex];
-                int blurredPenalty = Mathf.RoundToInt((float)(penaltiesVerticalPass[x, y] / (kernelSize * kernelSize)));
-                grid[x, 0, y].movementPenalty = blurredPenalty;
-            }
-        }
-    }
     #endregion
     #region Heap
     public int MaxSize
@@ -231,110 +187,7 @@ public class EnemyManager : MonoBehaviour
     }
     #endregion
     #region Logic
-    IEnumerator FindPath(Vector3 startPos, Vector3 targetPos, Jericho enemy)
-    {
-        Vector3[] waypoints = new Vector3[0];
-        bool pathSuccess = false;
-        Node startNode = NodeFromWorldPoint(startPos);
-        Node targetNode = NodeFromWorldPoint(targetPos);
-        if (targetNode.walkable)
-        {
-
-            Heap<Node> openSet = new Heap<Node>(MaxSize);
-            HashSet<Node> closedSet = new HashSet<Node>();
-            openSet.Add(startNode);
-            while (openSet.Count > 0)
-            {
-                Node currentNode = openSet.RemoveFirst();
-                closedSet.Add(currentNode);
-                if (currentNode == targetNode)
-                {
-                    pathSuccess = true;
-                    break;//We've found our path!
-                }
-
-                foreach (Node neighbour in GetNeighbors(currentNode, 1))
-                {
-                    if (!neighbour.walkable || closedSet.Contains(neighbour))
-                    {
-                        continue;
-                    }
-                    switch (enemy.Personality)
-                    {
-                        case Jericho.personality.Stealthy:
-                            if (neighbour.openArea)
-                                neighbour.movementPenalty = 6;
-                            break;
-                        case Jericho.personality.Seeker:
-                            if (neighbour.corridor)
-                                neighbour.movementPenalty = 6;
-                            break;
-                    }
-                    Jericho[] enemies = FindObjectsOfType<Jericho>();
-                    foreach (var item in enemies)
-                    {
-                        if (item != enemy)
-                        {
-                            foreach (var item2 in GetNeighbors(NodeFromWorldPoint(item.transform.position), 1))
-                            {
-                                item2.movementPenalty = 10;
-                            }
-                        }
-                    }
-                    BlurPenaltyMap(3);
-                    int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour) + neighbour.movementPenalty;
-                    if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
-                    {
-                        neighbour.gCost = newMovementCostToNeighbour;
-                        neighbour.hCost = GetDistance(neighbour, targetNode);
-                        neighbour.parent = currentNode;
-                        if (!openSet.Contains(neighbour))
-                            openSet.Add(neighbour);
-                        else
-                            openSet.UpdateItem(neighbour);
-                    }
-                }
-            }
-        }
-        yield return null;
-        if (pathSuccess)
-            waypoints = RetracePath(startNode, targetNode);
-        FinishedProcessingPath(waypoints, pathSuccess);
-
-        foreach (var item in grid)
-        {
-            if (item.movementPenalty > 0 && !item.obstructed)
-                item.movementPenalty = 0;
-        }
-    }
-    Vector3[] RetracePath(Node startNode, Node endNode)
-    {
-        List<Node> newPath = new List<Node>();
-        Node currentNode = endNode;
-        while (currentNode != startNode)
-        {
-            newPath.Add(currentNode);
-            currentNode = currentNode.parent;
-        }
-        Vector3[] wayPoints = SimplifyPath(newPath);
-        System.Array.Reverse(wayPoints);
-        return wayPoints;
-    }
-    Vector3[] SimplifyPath(List<Node> path)
-    {
-        List<Vector3> waypoints = new List<Vector3>();
-        Vector3 directionOld = Vector3.zero;
-
-        for (int i = 1; i < path.Count; i++)
-        {
-            Vector3 directionNew = new Vector3(path[i - 1].gridX - path[i].gridX, path[i - 1].gridY - path[i].gridY, path[i - 1].gridZ - path[i].gridZ);
-            if (directionNew != directionOld)
-                waypoints.Add(path[i - 1].worldPosition);
-            directionOld = directionNew;
-        }
-        return waypoints.ToArray();
-    }
-    int GetDistance(Node nodeA, Node nodeB)
+    public int GetDistance(Node nodeA, Node nodeB)
     {
         int output = 0;
         int dstX = Mathf.Abs(nodeA.gridX - nodeB.gridX);
@@ -345,30 +198,6 @@ public class EnemyManager : MonoBehaviour
             output = 14 * dstZ + 10 * (dstX - dstZ);
         output = 14 * dstX + 10 * (dstZ - dstX);
         return output - dstY;
-    }
-    public void RequestPath(Vector3 pathStart, Vector3 pathEnd, System.Action<Vector3[], bool> callBack, Jericho enemy)
-    {
-        pathRequestQueue.Enqueue(new PathRequest(pathStart, pathEnd, callBack, enemy));
-        TryProcessNext();
-    }
-    void TryProcessNext()
-    {
-        if (!isProcessingPath && pathRequestQueue.Count > 0)
-        {
-            currentPathRequest = pathRequestQueue.Dequeue();
-            isProcessingPath = true;
-            StartFindPath(currentPathRequest.pathStart, currentPathRequest.pathEnd, currentPathRequest.enemy);
-        }
-    }
-    void FinishedProcessingPath(Vector3[] path, bool success)
-    {
-        currentPathRequest.callBack(path, success);
-        isProcessingPath = false;
-        TryProcessNext();
-    }
-    void StartFindPath(Vector3 startPos, Vector3 targetPos, Jericho enemy)
-    {
-        StartCoroutine(FindPath(startPos, targetPos, enemy));
     }
     #endregion
     #endregion
@@ -530,7 +359,6 @@ public class EnemyManager : MonoBehaviour
             int newSum = (item.corridor && enemy.Personality == Jericho.personality.Seeker) ? 4 : (item.openArea && enemy.Personality == Jericho.personality.Stealthy) ? 4 : 0;
             item.movementPenalty = 10 + newSum;
         }
-        BlurPenaltyMap(2);
     }
     IEnumerator spawnEnemies()
     {
@@ -689,6 +517,7 @@ public class navmeshManager
     [Range(70, 90)]
     public int revisitThreshold = 70;
 }
+[System.Serializable]
 public class Node : IHeapItem<Node>
 {
     public bool walkable, obstructed, raised, openArea, corridor;
@@ -838,19 +667,18 @@ public interface IHeapItem<T> : System.IComparable<T>
         set;
     }
 }
+[System.Serializable]
 public struct PathRequest
 {
     public Vector3 pathStart;
     public Vector3 pathEnd;
-    public System.Action<Vector3[], bool> callBack;
-    public Jericho enemy;
+    public Vector3[] path;
 
-    public PathRequest(Vector3 _start, Vector3 _end, System.Action<Vector3[], bool> _callBack, Jericho _enemy)
+    public PathRequest(Vector3 _start, Vector3 _end, Vector3[] _path)
     {
         pathStart = _start;
         pathEnd = _end;
-        callBack = _callBack;
-        enemy = _enemy;
+        path = _path;
     }
 }
 public struct Line

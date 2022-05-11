@@ -64,8 +64,11 @@ public class PlayerObject : MonoBehaviour
     {
         isFocus = true;
         myCanvas.SetActive(true);
-        Cursor.visible = false;
-        Cursor.lockState = CursorLockMode.Locked;
+        if (!GameManager.instance.storyMode)
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
         CameraHandler.singleton.targetTransform = this.transform;
         SwapManager.singleton.mainCam.SetActive(true);
         SwapManager.singleton.topCam.SetActive(false);
