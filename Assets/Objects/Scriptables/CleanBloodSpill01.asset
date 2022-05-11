@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: CleanBloodSpill01
   m_EditorClassIdentifier: 
   goalType: 1
-  title: Clean up the spill at BLANK
+  title: Clean up the spill in the snack store
   description: It looks a little strange but we still need to clean it
   numToCompletion: 3

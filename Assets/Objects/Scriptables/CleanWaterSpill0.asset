@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: CleanWaterSpill0
   m_EditorClassIdentifier: 
   goalType: 1
-  title: Clean up the spill at BLANK
+  title: Clean up the spill in the breakroom
   description: Who keeps spilling this water everywhere?
   numToCompletion: 3

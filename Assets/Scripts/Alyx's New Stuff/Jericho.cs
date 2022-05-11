@@ -8,12 +8,10 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Rigidbody))]
 public class Jericho : MonoBehaviour
 {
-    public personality Personality = personality.Aggressive;
     public myAudio MyAudio;
     public animationManager MyAnimations;
     public aiManager MyAIManager;
     public navmeshManager MyNavMeshManager;
-    public Path MyAStarManager;
     [HideInInspector]
     public PlayerObject targPlayer;
     [HideInInspector]
@@ -24,21 +22,17 @@ public class Jericho : MonoBehaviour
     [HideInInspector]
     public float trackTimer, stunTimer, attackCooldown, attackCooldownReal;
     [HideInInspector]
-    public bool hasFinishedPath = false;
-    [HideInInspector]
-    public float realMovSpeed;
+    public bool isStun, isTargetingBarricades, isHunting, isVanish;
 
     #region Pathfinding
     #region Generic
     public virtual void startHuntTrigger(Vector3 newTarget) //Can be manually triggered by Clown
     {
-        if (EnemyManager.instance.isPlayerActive(targPlayer) && targPlayer.transform.position == newTarget)
-            FindPath(transform.position, EnemyManager.instance.returnPlayerAttackAngle(targPlayer, this));
-        else
-            FindPath(transform.position, newTarget);
+        MyNavMeshManager.agent.SetDestination(newTarget);
         targNoise = null;
         updateNodeWeight();
-        SFXManager.instance.PlaySound(MyAudio.mySound, MyAudio.mySource.position);
+       if(MyAudio.hasSound)
+        SFXManager.instance.PlaySound(MyAudio.mySound, this.transform.position);
         MyAIManager.EnemyState = aiManager.enemyState.Chase;
     }
     public void UpdateWeightingList()
@@ -81,14 +75,14 @@ public class Jericho : MonoBehaviour
         bool output = false;
         List<PlayerObject> visibleTargets = new List<PlayerObject>();
         visibleTargets.Clear();
-        Collider[] targetsInViewRadius = Physics.OverlapSphere(MyPosition(), MyAIManager.viewConeRadius, MyAIManager.targetMask);
+        Collider[] targetsInViewRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.viewConeRadius, MyAIManager.targetMask);
         for (int i = 0; i < targetsInViewRadius.Length; i++)
         {
             Transform target = targetsInViewRadius[i].transform;
-            Vector3 dirToTarget = (target.position - MyPosition()).normalized;
+            Vector3 dirToTarget = (target.position - this.transform.position).normalized;
             if (Vector3.Angle(transform.forward, dirToTarget) < MyAIManager.viewConeAngle / 2)
             {
-                float dstToTarget = Vector3.Distance(MyPosition(), target.position);
+                float dstToTarget = Vector3.Distance(this.transform.position, target.position);
                 if (!Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z + 1), dirToTarget, dstToTarget, MyAIManager.obstacleMask))
                 {
                     visibleTargets.Add(target.GetComponent<PlayerObject>());
@@ -101,9 +95,9 @@ public class Jericho : MonoBehaviour
             float minDist = Mathf.Infinity;
             foreach (var item in visibleTargets)
             {
-                if (Vector3.Distance(item.transform.position, MyPosition()) < minDist)
+                if (Vector3.Distance(item.transform.position, this.transform.position) < minDist)
                 {
-                    minDist = Vector3.Distance(item.transform.position, MyPosition());
+                    minDist = Vector3.Distance(item.transform.position, this.transform.position);
                     targPlayer = item;
                 }
             }
@@ -115,14 +109,14 @@ public class Jericho : MonoBehaviour
         bool output = false;
         List<SoundPoint> soundTargets = new List<SoundPoint>();
         soundTargets.Clear();
-        Collider[] targetsInHearRadius = Physics.OverlapSphere(MyPosition(), MyAIManager.hearingRadius, MyAIManager.targetMask);
+        Collider[] targetsInHearRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.hearingRadius, MyAIManager.soundMask);
         float distCheck = MyAIManager.hearingRadius + 1;
         int x = -1;
         for (int i = 0; i < targetsInHearRadius.Length; i++)
         {
-            float dstToTarget = Vector3.Distance(MyPosition(), targetsInHearRadius[i].transform.position);
-            Vector3 dirToTarget = (targetsInHearRadius[i].transform.position - MyPosition()).normalized;
-            if (!Physics.Raycast(MyPosition(), dirToTarget))
+            float dstToTarget = Vector3.Distance(this.transform.position, targetsInHearRadius[i].transform.position);
+            Vector3 dirToTarget = (targetsInHearRadius[i].transform.position - this.transform.position).normalized;
+            if (!Physics.Raycast(this.transform.position, dirToTarget))
                 dstToTarget = dstToTarget + 4;
             if (dstToTarget < distCheck && targetsInHearRadius[i].GetComponent<SoundPoint>() != null)
             {
@@ -140,10 +134,6 @@ public class Jericho : MonoBehaviour
             angleInDegrees += transform.eulerAngles.y;
         }
         return new Vector3(Mathf.Sin(angleInDegrees * Mathf.Deg2Rad), 0, Mathf.Cos(angleInDegrees * Mathf.Deg2Rad));
-    }
-    public Vector3 MyPosition()
-    {
-        return this.transform.position;
     }
     #endregion
     #region NavMesh
@@ -260,10 +250,11 @@ public class Jericho : MonoBehaviour
         if (NavMesh.CalculatePath(transform.position, MyNavMeshManager.curNode.nodePoint, NavMesh.AllAreas, MyNavMeshManager.path))
         {
             if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                FindPath(transform.position, MyNavMeshManager.curNode.nodePoint);
+                MyNavMeshManager.agent.SetDestination(MyNavMeshManager.curNode.nodePoint);
             else
             {
-                MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
+                MyNavMeshManager.nodeWeb.Remove(MyNavMeshManager.curNode);
+                BuildNode();
             }
         }
     }
@@ -296,7 +287,7 @@ public class Jericho : MonoBehaviour
                     }
                 }
                 if (targBar != null)
-                    FindPath(transform.position, targBar.transform.position);
+                    MyNavMeshManager.agent.SetDestination(targBar.transform.position);
                 else
                     Debug.Log(destrucTargs[index]);
             }
@@ -320,54 +311,6 @@ public class Jericho : MonoBehaviour
     }
     #endregion
     #endregion
-    #region A*
-    public void FindPath(Vector3 startPos, Vector3 targetPos)
-    {
-        Debug.Log("requesting find path");
-        EnemyManager.instance.RequestPath(startPos, targetPos, OnPathFound, this);
-    }
-    public void OnPathFound(Vector3[] waypoints, bool pathSuccessful)
-    {
-        if (pathSuccessful)
-        {
-            MyAStarManager = new Path(waypoints, transform.position, MyAIManager.turnDst);
-            StopCoroutine("FollowPath");
-            StartCoroutine("FollowPath");
-        }
-    }
-    IEnumerator FollowPath()
-    {
-        bool followingPath = true;
-        int pathIndex = 0;
-
-        transform.LookAt(MyAStarManager.lookPoints[0]);
-        Quaternion targetRotation = Quaternion.LookRotation(MyAStarManager.lookPoints[0] - transform.position);
-        transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * MyAIManager.rotSpeed);
-
-        while (followingPath)
-        {
-            Vector2 pos2D = new Vector2(transform.position.x, transform.position.z);
-            while (MyAStarManager.turnBoundaries[pathIndex].HasCrossedLine(pos2D))
-            {
-                if (pathIndex == MyAStarManager.finishLineIndex)
-                {
-                    followingPath = false;
-                    hasFinishedPath = true;
-                    break;
-                }
-                else
-                    pathIndex++;
-            }
-            if (followingPath)
-            {
-                targetRotation = Quaternion.LookRotation(MyAStarManager.lookPoints[pathIndex] - transform.position);
-                transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * MyAIManager.rotSpeed);
-                transform.Translate(Vector3.forward * Time.deltaTime * realMovSpeed, Space.Self);
-            }
-            yield return null;
-        }
-    }
-    #endregion
     #region AIs
     IEnumerator waitForEndOfAnimation()
     {
@@ -379,8 +322,12 @@ public class Jericho : MonoBehaviour
     }
     public virtual void attack(PlayerObject player) //For damage logic and unique effects
     {
+        if (player == null)
+            Debug.Break();
         Debug.Log("AttackingPlayer");
         MyAIManager.EnemyState = aiManager.enemyState.Attack;
+        if (MyAnimations.hasAnimations)
+            MyAnimations.anim.SetInteger("state", 3); //Attack anim
         player.takeDamage();
     }
     public virtual void hitBarricade() //Doesn't get run by Dracula or Blob
@@ -390,7 +337,6 @@ public class Jericho : MonoBehaviour
     }
     public virtual void VanishEnemy()
     {
-        MyAIManager.EnemyState = aiManager.enemyState.Vanish;
         MyAnimations.anim.CrossFade("VanishAnim", 0.2f); //Animation MUST be named this
     }
     public virtual void ReturnEnemy()
@@ -402,6 +348,7 @@ public class Jericho : MonoBehaviour
     {
         MyAIManager.EnemyState = aiManager.enemyState.Roam;
         targBar = null;
+        targPlayer = null;
         BuildNode();
     }
     public virtual void StartStun(float stunTime)
@@ -410,14 +357,6 @@ public class Jericho : MonoBehaviour
         MyAIManager.EnemyState = aiManager.enemyState.Stunned;
     }
     #endregion
-    public enum personality
-    {
-        Stealthy, //higher weighting against Open Areas
-        Seeker, //higher weighting against Corridors
-        Aggressive, //higher speed in Corridors
-        Cocky, //higher speed in Open Areas
-        Null
-    };
 }
 [System.Serializable]
 public struct weightedAngles

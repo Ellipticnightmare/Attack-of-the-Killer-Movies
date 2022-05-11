@@ -126,7 +126,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5619366315717859518}
-  m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00000020861623}
+  m_LocalRotation: {x: 0, y: 1, z: 0, w: 0}
   m_LocalPosition: {x: 11.35, y: 0.793203, z: 34.79}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
@@ -213,7 +213,7 @@ NavMeshAgent:
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 397.5
-  m_StoppingDistance: 0
+  m_StoppingDistance: 1.5
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
@@ -252,7 +252,7 @@ Rigidbody:
   m_Drag: 0
   m_AngularDrag: 0.05
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -268,28 +268,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 993e7d56d27acb24c8978d049f501d4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewRadius: 19
-  viewAngle: 206
-  targetMask:
-    serializedVersion: 2
-    m_Bits: 1024
-  obstacleMask:
-    serializedVersion: 2
-    m_Bits: 2048
-  hasAnimations: 0
-  nodeMinDistance: 8
-  nodeWeightDistance: 8
-  maximumWebSize: 9
-  roamingDesire: 2
-  revisitThreshold: 86
-  walkRadius: 10
-  moveSpeed: 3
-  rotSpeed: 180
-  isClown: 0
-  layerMask:
-    serializedVersion: 2
-    m_Bits: 256
+  MyAudio:
+    mySound: {fileID: 0}
+    mySource: {fileID: 0}
+  MyAnimations:
+    anim: {fileID: 0}
+    hasAnimations: 0
+  MyAIManager:
+    viewConeRadius: 13
+    viewConeAngle: 190
+    myPreferredAngles: []
+    aggroRange: 10
+    targetMask:
+      serializedVersion: 2
+      m_Bits: 64
+    obstacleMask:
+      serializedVersion: 2
+      m_Bits: 2048
+    soundMask:
+      serializedVersion: 2
+      m_Bits: 8192
+    moveSpeed: 3
+    rotSpeed: 3
+    turnDst: 5
+    EnemyState: 1
+    tensionIndex: 0
+    patienceIndex: 0
+    hotOrCold: 0
+  MyNavMeshManager:
+    walkRadius: 10
+    nodeWeb: []
+    nodeMinDistance: 10
+    nodeWeightDistance: 20
+    agent: {fileID: 0}
+    curNode:
+      nodePoint: {x: 0, y: 0, z: 0}
+      weighting: 0
+    nextNode:
+      nodePoint: {x: 0, y: 0, z: 0}
+      weighting: 0
+    maximumWebSize: 8
+    roamingDesire: 1
+    revisitThreshold: 70
   targPlayer: {fileID: 0}
+  targNoise: {fileID: 0}
+  targBar: {fileID: 0}
+  trackTimer: 0
+  stunTimer: 0
+  attackCooldown: 0
+  attackCooldownReal: 0
+  Enemy: 2
+  clownTimer: 0
+  specialEventTimerSet: 30
 --- !u!1 &5619366315858621979
 GameObject:
   m_ObjectHideFlags: 0

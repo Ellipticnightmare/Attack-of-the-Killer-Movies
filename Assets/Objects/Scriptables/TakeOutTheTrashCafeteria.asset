@@ -12,7 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86dbdb7bd7c09014ea2fef632ae2b525, type: 3}
   m_Name: TakeOutTheTrashCafeteria
   m_EditorClassIdentifier: 
-  goalType: 1
   title: Take Out the Trash Cafeteria
-  description: Take out the trash in the cafeteria
-  numToCompletion: 3
+  description: It just keeps pilling up

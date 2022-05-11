@@ -27,4 +27,5 @@ public class myAudio
 {
     public AudioClip mySound;
     public Transform mySource;
+    public bool hasSound;
 }

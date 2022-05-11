@@ -12,66 +12,28 @@ public class TaskManager : MonoBehaviour
     [HideInInspector]
     public List<Task> allTasks = new List<Task>();
     List<Task> activeTasks = new List<Task>();
-    List<Task> completedTasks = new List<Task>();
-    List<TaskUI> SelectedTaskUIs = new List<TaskUI>();
-    public List<PlayerObject> ns_activePlayers = new List<PlayerObject>();
     List<PlayerObject> activePlayers = new List<PlayerObject>();
 
     public GameObject taskObject; //reference to prefab that will show all task information
     public int maxDisplayTasks = 6;
     void Start()
     {
+        activePlayers.AddRange(FindObjectsOfType<PlayerObject>());
         instance = this;
         allTasks.AddRange(myTaskDatabase.allTasks);
         TaskObject[] allObjects = FindObjectsOfType<TaskObject>();
         allTaskObjects.AddRange(allObjects);
         CreatePlayerLists();
     }
-    public void PlayerDied(PlayerObject player) //called from GameManager when a player dies, unlocks all tasks
-                                    //in case surviving players have already completed a task there,
-                                    //thus preventing hard locks where players would be unable to re-do
-                                    //a task
+    public void PlayerDied(PlayerObject player) => StartCoroutine(RedelegateTasks(player));
+    public void RemoveFromTasks(PlayerObject player, Task task)
     {
-        foreach (var item in allTaskObjects)
+        Debug.Log("Removing");
+        activePlayers.AddRange(FindObjectsOfType<PlayerObject>());
+        for (int i = 0; i < player.myTasks.Count; i++)
         {
-            item.doesDiscriminateBetweenPlayers = false;
-        }
-        Debug.Log("Redelegating Tasks");
-        FindObjectOfType<TaskManager>().ReDelegateTasks(player);
-    }
-    public void ReDelegateTasks(PlayerObject player) => StartCoroutine(RedelegateTasks(player));
-    public static void UpdatedTask(TaskUI goal)
-    {
-        goal.UpdateTaskUI();
-    }
-    public void RemoveFromTasks(TaskUI goal, TaskObject taskGoal)
-    {
-        foreach (var obj in activePlayers)
-        {
-            if (obj == goal.myPlayer)
-            {
-                foreach (var item in obj.myTasks)
-                {
-                    if (item == goal)
-                    {
-                        activeTasks.Remove(item.myTask);
-                        obj.myTasks.Remove(item);
-                        obj.myTaskChecks.Remove(item.myTask);
-                        obj.UpdateMyUI();
-                        return;
-                    }
-                }
-            }
-        }
-        List<Task> taskChecks = new List<Task>();
-        foreach (var item in activeTasks)
-        {
-            if (item == goal.myTask)
-                taskChecks.Add(item);
-        }
-        if (taskChecks.Count <= 1)
-        {
-            taskGoal.enabled = false;
+            if (player.myTasks[i].title == task.title)
+                player.myTasks.Remove(player.myTasks[i]);
         }
         bool canWin = true;
         foreach (var item in activePlayers)
@@ -82,27 +44,10 @@ public class TaskManager : MonoBehaviour
         if (canWin)
             GameManager.instance.FinishedGame();
     }
-    public void CreatePlayerLists()
-    {
-        PlayerObject[] players = FindObjectsOfType<PlayerObject>();
-        foreach (var item in players)
-        {
-            PlayerObject newController = item.GetComponent<PlayerObject>();
-            newController.newTaskObject = taskObject;
-            ns_activePlayers.Add(newController);
-        }
-        activePlayers = ns_activePlayers;
+    public void CreatePlayerLists() => 
         StartCoroutine(CreateTaskLists());
-    }
-    public void UpdateWorld()
-    {
-        /*foreach (var item in allTaskObjects)
-        {
-            if (activeTasks.Contains(item.thisTask))
-                Destroy(item); //This can be changed to make the task objects static by changing to [item.enabled = false;]
-        }*/
+    public void UpdateWorld() =>
         SwapManager.singleton.SwapTo();
-    }
     IEnumerator CreateTaskLists()
     {
         float rCheck = Random.Range(allTasks.Count / 3, allTasks.Count - 2);
@@ -152,18 +97,10 @@ public class TaskManager : MonoBehaviour
             else
                 activePlayers[3].gainedTask(masterB[i]);
         }
-        yield return new WaitForSeconds(1);
-        yield return new WaitForEndOfFrame();
-        foreach (var item in activePlayers)
-        {
-            item.BuildMyTaskList();
-        }
         yield return new WaitForEndOfFrame();
         UpdateWorld();
-        if (!GameManager.instance.storyMode)
-        {
-            GameManager.togglePause();
-        }
+        if(!GameManager.instance.storyMode)
+        GameManager.instance.togglePause();
     }
     IEnumerator RedelegateTasks(PlayerObject player)
     {
@@ -179,7 +116,7 @@ public class TaskManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
         activePlayers.Remove(diedPlayer);
         yield return new WaitForEndOfFrame();
-        List<Task> newTasks = diedPlayer.myTaskChecks;
+        List<Task> newTasks = diedPlayer.myTasks;
         IEnumerable<Task> subTaskList = newTasks;
         List<IEnumerable<Task>> listOfLists = new List<IEnumerable<Task>>();
         yield return new WaitForEndOfFrame();
@@ -190,15 +127,16 @@ public class TaskManager : MonoBehaviour
         yield return new WaitForEndOfFrame();
         for (int i = 0; i < activePlayers.Count; i++)
         {
-            activePlayers[i].myTaskChecks.AddRange(listOfLists[i]);
+            activePlayers[i].myTasks.AddRange(listOfLists[i]);
         }
         yield return new WaitForEndOfFrame();
-        foreach (var item in activePlayers)
-        {
-            item.BuildMyTaskList();
-        }
         Destroy(player.gameObject);
         FindObjectOfType<SwapManager>().StartSwap(player);
         UpdateWorld();
     }
+}
+[System.Serializable]
+public class TaskUI
+{
+    public Text taskName, taskDescription;
 }

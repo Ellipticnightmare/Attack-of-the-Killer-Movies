@@ -7,51 +7,13 @@ using System.Linq;
 public class PlayerObject : MonoBehaviour
 {
     #region taskManagement
-    public List<Task> myTaskChecks = new List<Task>();
-    public List<TaskUI> myTasks = new List<TaskUI>();
-    public List<GameObject> myTaskObjects = new List<GameObject>();
-    public GameObject myCanvas, myTaskListHolder;
-    public GameObject newTaskObject;
+    public List<Task> myTasks = new List<Task>();
+    public GameObject MyTaskCanvas;
+    public Task mainTask;
+    public int[] taskVals;
     public void gainedTask(Task newTask)
     {
-        myTaskChecks.Add(newTask);
-    }
-    public void BuildMyTaskList()
-    {
-        myTaskChecks = myTaskChecks.Distinct().ToList();
-        foreach (var item in myTaskChecks.ToList())
-        {
-            GameObject newTaskUIObj = Instantiate(newTaskObject, myTaskListHolder.transform);
-            TaskUI newTask = newTaskUIObj.GetComponent<TaskUI>();
-            newTask.myTask = item;
-            myTasks.Add(newTask);
-            myTaskObjects.Add(newTaskUIObj);
-        }
-        myTasks = myTasks.Distinct().ToList();
-        UpdateMyUI();
-    }
-    public void UpdateMyUI()
-    {
-        List<TaskUI> newMyTasks = new List<TaskUI>();
-        foreach (var obj in myTaskObjects)
-        {
-            Destroy(obj);
-        }
-        foreach (var data in myTasks)
-        {
-            GameObject newTaskUIObj = Instantiate(newTaskObject, myTaskListHolder.transform);
-            TaskUI newVals = newTaskUIObj.GetComponent<TaskUI>();
-            newVals.numberCompleted = data.numberCompleted;
-            newVals.myPlayer = this;
-            newVals.myTask = data.myTask;
-            myTaskObjects.Add(newTaskUIObj);
-            newMyTasks.Add(newVals);
-        }
-        myTasks = newMyTasks;
-        foreach (var item in myTasks)
-        {
-            item.GenerateTaskUI();
-        }
+        myTasks.Add(newTask);
     }
     #endregion
     #region playerSwitching
@@ -63,16 +25,14 @@ public class PlayerObject : MonoBehaviour
     public void enableControl()
     {
         isFocus = true;
-        myCanvas.SetActive(true);
         if (!GameManager.instance.storyMode)
         {
             Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked; 
+            Cursor.lockState = CursorLockMode.Locked;
         }
         CameraHandler.singleton.targetTransform = this.transform;
         SwapManager.singleton.mainCam.SetActive(true);
         SwapManager.singleton.topCam.SetActive(false);
-        UpdateMyUI();
     }
     public void disableControl()
     {
@@ -81,7 +41,6 @@ public class PlayerObject : MonoBehaviour
         Cursor.visible = true;
         Cursor.lockState = CursorLockMode.Confined;
         isFocus = false;
-        myCanvas.SetActive(false);
     }
     #endregion
     #region playerGameplay
@@ -105,7 +64,7 @@ public class PlayerObject : MonoBehaviour
     [Header("Ground & Air Detection Stats")]
     float groundDetectionRayStartPoint = .5f;
     float minimumDistanceNeededToBeginFall = 1f;
-    public float groundDetectionRayDistance = .2f;
+    float groundDetectionRayDistance = .2f;
     public LayerMask ignoreForGroundCheck;
     public float inAirTimer;
     public float fallingSpeed = 45;
@@ -122,6 +81,14 @@ public class PlayerObject : MonoBehaviour
     {
         if (isFocus)
         {
+            if (myTasks.Count > 0)
+            {
+                GameManager.instance.taskCanvas.SetActive(true);
+                GameManager.instance.myTaskUI.taskDescription.text = myTasks[0].description;
+                GameManager.instance.myTaskUI.taskName.text = myTasks[0].title;
+            }
+            else
+                GameManager.instance.taskCanvas.SetActive(false);
             float delta = Time.deltaTime;
             TickInput(delta);
             HandleSprintInput(delta);
@@ -216,7 +183,7 @@ public class PlayerObject : MonoBehaviour
     public void TickInput(float delta) => MoveInput(delta);
     void MoveInput(float delta)
     {
-        horizontal = movementInput.x; 
+        horizontal = movementInput.x;
         vertical = movementInput.y;
         moveAmount = Mathf.Clamp01(Mathf.Abs(horizontal) + Mathf.Abs(vertical));
         mouseX = cameraInput.x;
