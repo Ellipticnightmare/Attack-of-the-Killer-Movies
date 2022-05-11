@@ -36,6 +36,7 @@ public class TaskManager : MonoBehaviour
         {
             item.doesDiscriminateBetweenPlayers = false;
         }
+        Debug.Log("Redelegating Tasks");
         FindObjectOfType<TaskManager>().ReDelegateTasks(player);
     }
     public void ReDelegateTasks(PlayerObject player) => StartCoroutine(RedelegateTasks(player));

@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     public Color timerPauseColor, timerRunColor;
     public GameObject endGameScreenUI;
     GameObject s_endGameScreenUI;
+    public GameObject SoundPoint;
     private void Awake()
     {
         instance = this;
@@ -39,10 +40,46 @@ public class GameManager : MonoBehaviour
         if (PlayerPrefs.GetFloat("timeScore") >= timeSpent)
             PlayerPrefs.SetFloat("timeScore", timeSpent);
         tMod = 0;
+        string[] checkEnemyNames = new string[0];
+        switch (EnemyManager.instance.gameMode)
+        {
+            case "Story":
+                checkEnemyNames = PlayerPrefs.GetString("survivedMonsters").Split('|');
+                break;
+            case "Custom":
+                checkEnemyNames = PlayerPrefs.GetString("survivedCustomMonsters").Split('|');
+                break;
+        }
+        List<string> survivedCheck = new List<string>();
+        survivedCheck.AddRange(checkEnemyNames);
+        if (!survivedCheck.Contains(PlayerPrefs.GetString("enemy01")))
+            survivedCheck.Add(PlayerPrefs.GetString("enemy01"));
+        if (!survivedCheck.Contains(PlayerPrefs.GetString("enemy02")))
+            survivedCheck.Add(PlayerPrefs.GetString("enemy02"));
+        if (!survivedCheck.Contains(PlayerPrefs.GetString("enemy03")))
+            survivedCheck.Add(PlayerPrefs.GetString("enemy03"));
+        PlayerPrefs.SetInt("survivedCustomMonstersCheck", survivedCheck.Count + PlayerPrefs.GetInt("difficultyCheck"));
+        string[] combinerArray = survivedCheck.ToArray();
+        string combinedString = "";
+        foreach (var item in combinerArray)
+        {
+            combinedString = "|" + combinedString + item;
+        }
+        combinedString.Remove(0, 1);
+        switch (EnemyManager.instance.gameMode)
+        {
+            case "Story":
+                PlayerPrefs.SetString("survivedMonsters", combinedString);
+                break;
+            case "Custom":
+                PlayerPrefs.SetString("survivedCustomMonsters", combinedString);
+                break;
+        }
         s_endGameScreenUI.SetActive(true);
     }
     public void PlayerDied(PlayerObject player)
     {
+        Debug.Log("PlayerDied");
         TaskManager.instance.PlayerDied(player);
     }
     public static void togglePause()

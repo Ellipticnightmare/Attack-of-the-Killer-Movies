@@ -13,6 +13,8 @@ public class MonsterController : Jericho
     // Start is called before the first frame update
     void Start()
     {
+        MyAIManager.hotOrCold = 10;
+        MyAIManager.patienceIndex = 15;
         specialEventTimer = specialEventTimerSet;
         trackTimer = 2;
         attackCooldown = 1;
@@ -21,12 +23,28 @@ public class MonsterController : Jericho
         MyNavMeshManager.path = new NavMeshPath();
         BuildNode();
         UpdateWeightingList();
+        Personality = (personality)Random.Range(0, 4);
+        MyAIManager.aggroRange = MyAIManager.aggroRange + EnemyManager.instance.difficultyCheck;
+        MyAIManager.viewConeRadius = MyAIManager.viewConeRadius + (EnemyManager.instance.difficultyCheck * 1.25f * 1.25f);
+        MyAIManager.viewConeAngle = MyAIManager.viewConeAngle + EnemyManager.instance.difficultyCheck;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(specialEventTimer >= 0 && specialEventTimerSet > 0)
+        realMovSpeed = MyAIManager.moveSpeed;
+        switch (Personality)
+        {
+            case personality.Aggressive:
+                if (EnemyManager.instance.NodeFromWorldPoint(transform.position).corridor)
+                    realMovSpeed = MyAIManager.moveSpeed * 1.5f;
+                break;
+            case personality.Cocky:
+                if (EnemyManager.instance.NodeFromWorldPoint(transform.position).openArea)
+                    realMovSpeed = MyAIManager.moveSpeed * 1.5f;
+                break;
+        }
+        if (specialEventTimer >= 0 && specialEventTimerSet > 0)
             specialEventTimer--;
         else
         {
@@ -38,8 +56,6 @@ public class MonsterController : Jericho
         }
         MyNavMeshManager.maximumWebSize = Mathf.Clamp(MyNavMeshManager.maximumWebSize, 7, 15);
         MyNavMeshManager.revisitThreshold = Mathf.Clamp(MyNavMeshManager.revisitThreshold, 69, 91);
-        MyNavMeshManager.agent.speed = MyAIManager.moveSpeed;
-        MyNavMeshManager.agent.angularSpeed = MyAIManager.rotSpeed;
         if (attackCooldownReal < attackCooldown)
             attackCooldownReal += Time.deltaTime;
         switch (MyAIManager.EnemyState)
@@ -53,12 +69,50 @@ public class MonsterController : Jericho
                     {
                         if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
                         {
-                            startHuntTrigger();
+                            startHuntTrigger(targPlayer.transform.position);
                         }
                         else
                         {
                             MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
                         }
+                    }
+                }
+                if (hearSound() && Enemy != enemy.Clown)
+                {
+                    if (NavMesh.CalculatePath(transform.position, targNoise.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                    {
+                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                            startHuntTrigger(targNoise.transform.position);
+                        else
+                            MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
+                    }
+                }
+                break;
+            case aiManager.enemyState.Hunting:
+                if (MyAnimations.hasAnimations)
+                    MyAnimations.anim.SetInteger("state", 0); //walk anim
+                if (canSeePlayer())
+                {
+                    if (NavMesh.CalculatePath(transform.position, targPlayer.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                    {
+                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                        {
+                            startHuntTrigger(targPlayer.transform.position);
+                        }
+                        else
+                        {
+                            MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
+                        }
+                    }
+                }
+                if (hearSound())
+                {
+                    if (NavMesh.CalculatePath(transform.position, targNoise.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                    {
+                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                            startHuntTrigger(targNoise.transform.position);
+                        else
+                            MyAIManager.EnemyState = aiManager.enemyState.targetBarricades;
                     }
                 }
                 break;
@@ -68,7 +122,7 @@ public class MonsterController : Jericho
                 if (trackTimer >= 0)
                 {
                     trackTimer -= Time.deltaTime;
-                    MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
+                    FindPath(transform.position, targPlayer.transform.position);
                 }
                 else
                 {
@@ -78,7 +132,7 @@ public class MonsterController : Jericho
                         {
                             if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
                             {
-                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
+                                FindPath(transform.position, targPlayer.transform.position);
                             }
                             else
                             {
@@ -93,7 +147,7 @@ public class MonsterController : Jericho
                             if (clownTimer >= 0)
                             {
                                 clownTimer--;
-                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
+                                FindPath(transform.position, targPlayer.transform.position);
                             }
                             else
                             {
@@ -111,7 +165,10 @@ public class MonsterController : Jericho
                 }
                 break;
             case aiManager.enemyState.targetBarricades:
-                pingBarricade(false);
+                if (Enemy != enemy.Blob && Enemy != enemy.Dracula)
+                    pingBarricade(false);
+                else
+                    MyAIManager.EnemyState = aiManager.enemyState.Roam;
                 break;
             case aiManager.enemyState.Stunned:
                 if (MyAnimations.hasAnimations)
@@ -131,33 +188,31 @@ public class MonsterController : Jericho
                     MyAnimations.anim.SetInteger("state", 3); //Attack anim
                 break;
         }
-        if (!MyNavMeshManager.agent.pathPending)
+        if (hasFinishedPath)
         {
-            if (MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance)
+            if (attackCooldownReal >= attackCooldown)
             {
-                MyNavMeshManager.agent.velocity = new Vector3(0, 0, 0);
-                if (!MyNavMeshManager.agent.hasPath || MyNavMeshManager.agent.velocity.magnitude == 0)
+                switch (MyAIManager.EnemyState)
                 {
-                    if (attackCooldownReal >= attackCooldown)
-                    {
-                        switch (MyAIManager.EnemyState)
-                        {
-                            case aiManager.enemyState.Roam:
-                                BuildNode();
-                                break;
-                            case aiManager.enemyState.Chase:
-                                attack(targPlayer);
-                                break;
-                            case aiManager.enemyState.targetBarricades:
-                                hitBarricade();
-                                break;
-                            case aiManager.enemyState.Attack:
-                                attack(targPlayer);
-                                break;
-                        }
-                        attackCooldownReal = 0;
-                    }
+                    case aiManager.enemyState.Roam:
+                        BuildNode();
+                        break;
+                    case aiManager.enemyState.Hunting:
+                        MyAIManager.EnemyState = aiManager.enemyState.Roam;
+                        BuildNode();
+                        break;
+                    case aiManager.enemyState.Chase:
+                        attack(targPlayer);
+                        break;
+                    case aiManager.enemyState.targetBarricades:
+                        hitBarricade();
+                        break;
+                    case aiManager.enemyState.Attack:
+                        attack(targPlayer);
+                        break;
                 }
+                attackCooldownReal = 0;
+                hasFinishedPath = false;
             }
         }
     }
@@ -165,7 +220,7 @@ public class MonsterController : Jericho
     public override void BuildNode() => base.BuildNode();
     public override void attack(PlayerObject player) => base.attack(player);
     public override void hitBarricade() => base.hitBarricade();
-    public override void startHuntTrigger() => base.startHuntTrigger();
+    public override void startHuntTrigger(Vector3 position) => base.startHuntTrigger(position);
     public override void VanishEnemy() => base.VanishEnemy();
     public override void ReturnEnemy() => base.ReturnEnemy();
     public override void FinishHit() => base.FinishHit();

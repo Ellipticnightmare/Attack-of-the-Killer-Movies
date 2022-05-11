@@ -97,7 +97,16 @@ public class PlayerObject : MonoBehaviour
     float movementSpeed = 5;
     [SerializeField]
     float rotationSpeed = 10;
-    private void Start()
+    public bool isSprinting, isCrouch, isGrounded, isInAir, isInteracting;
+    float sprintTimer = 0;
+    [Header("Ground & Air Detection Stats")]
+    float groundDetectionRayStartPoint = .5f;
+    float minimumDistanceNeededToBeginFall = 1f;
+    float groundDetectionRayDistance = .2f;
+    public LayerMask ignoreForGroundCheck;
+    public float inAirTimer;
+    public float fallingSpeed = 45;
+    private void Awake()
     {
         rigidbody = GetComponent<Rigidbody>();
         cameraObject = GameObject.FindGameObjectWithTag("MainCamera").GetComponentInChildren<Camera>().transform;
@@ -112,12 +121,28 @@ public class PlayerObject : MonoBehaviour
         {
             float delta = Time.deltaTime;
             TickInput(delta);
+            HandleSprintInput(delta);
+            HandleFalling(delta, moveDirection);
             moveDirection = cameraObject.forward * vertical;
             moveDirection += cameraObject.right * horizontal;
             moveDirection.Normalize();
             moveDirection.y = 0;
 
-            float speed = movementSpeed;
+            if ((EnemyManager.instance.difficultyCheck >= 15 && !isCrouch) || isSprinting)
+            {
+                sprintTimer -= Time.deltaTime;
+                if (sprintTimer <= 0)
+                {
+                    sprintTimer = 1;
+                    GameObject newSoundPoint = Instantiate(GameManager.instance.SoundPoint, this.transform);
+                    float bonusTime = EnemyManager.instance.difficultyCheck > 5 ? Mathf.Clamp(EnemyManager.instance.difficultyCheck, 5, 10) / 10 : 0;
+                    newSoundPoint.GetComponent<SoundPoint>().Initialize(.1f + bonusTime);
+                }
+            }
+            else
+                sprintTimer = 0;
+
+            float speed = isCrouch ? movementSpeed * .75f : isSprinting ? movementSpeed * 1.45f : movementSpeed;
             moveDirection *= speed;
 
             Vector3 projectedVelocity = Vector3.ProjectOnPlane(moveDirection, normalVector);
@@ -130,9 +155,12 @@ public class PlayerObject : MonoBehaviour
 
             inputActions.PlayerMovement.Swap.performed += ctx => SwapManager.singleton.StartSwap(this);
         }
+        else
+            AnimatorHandler.UpdateAnimatorValues(0, 0);
     }
     public void takeDamage()
     {
+        Debug.Log("AttackedByEnemy");
         switch (playerState)
         {
             case PlayerState.Healthy:
@@ -147,7 +175,7 @@ public class PlayerObject : MonoBehaviour
         }
     }
     #region InputHandling
-    public float horizontal, vertical, moveAmount, mouseX, mouseY;
+    public float horizontal, vertical, moveAmount, mouseX, mouseY, runTimer;
     Vector2 movementInput;
     Vector2 cameraInput;
     public PlayerControls inputActions;
@@ -189,6 +217,93 @@ public class PlayerObject : MonoBehaviour
         moveAmount = Mathf.Clamp01(Mathf.Abs(horizontal) + Mathf.Abs(vertical));
         mouseX = cameraInput.x;
         mouseY = cameraInput.y;
+    }
+    void HandleSprintInput(float delta)
+    {
+        bool b_Input = inputActions.PlayerMovement.Run.phase == UnityEngine.InputSystem.InputActionPhase.Performed;
+        if (b_Input && !isCrouch)
+        {
+            runTimer += delta;
+            if (runTimer > .25f)
+                isSprinting = true;
+        }
+        else
+        {
+            isSprinting = false;
+            runTimer = 0;
+        }
+    }
+    void HandleCrouchInput(float delta)
+    {
+        bool b_Input = inputActions.PlayerMovement.Crouch.phase == UnityEngine.InputSystem.InputActionPhase.Performed;
+        if (b_Input)
+            isCrouch = true;
+        else
+            isCrouch = false;
+    }
+    void HandleFalling(float delta, Vector3 moveDirection)
+    {
+        isGrounded = false;
+        RaycastHit hit;
+        Vector3 origin = myTransform.position;
+        origin.y += groundDetectionRayStartPoint;
+
+        if (Physics.Raycast(origin, myTransform.forward, out hit, 0.4f))
+            moveDirection = Vector3.zero;
+        if (isInAir)
+        {
+            rigidbody.AddForce(-Vector3.up * fallingSpeed);
+            rigidbody.AddForce(moveDirection * fallingSpeed / 10);
+        }
+
+        Vector3 dir = moveDirection;
+        dir.Normalize();
+        origin = origin + dir * groundDetectionRayDistance;
+
+        targetPosition = myTransform.position;
+
+        if(Physics.Raycast(origin, -Vector3.up, out hit, minimumDistanceNeededToBeginFall, ignoreForGroundCheck))
+        {
+            normalVector = hit.normal;
+            Vector3 tp = hit.point;
+            isGrounded = true;
+            targetPosition.y = tp.y;
+            if (isInAir)
+            {
+                if(inAirTimer > .5f)
+                {
+                    AnimatorHandler.PlayTargetAnimation("Land", true);
+                    inAirTimer = 0;
+                }
+                else
+                {
+                    AnimatorHandler.PlayTargetAnimation("Locomotion", false);
+                    inAirTimer = 0;
+                }
+                isInAir = false;
+            }
+        }
+        else
+        {
+            if (isGrounded)
+                isGrounded = false;
+            if (!isInAir)
+            {
+                if (!isInteracting)
+                    AnimatorHandler.PlayTargetAnimation("Falling", true);
+                Vector3 vel = rigidbody.velocity;
+                vel.Normalize();
+                rigidbody.velocity = vel * (movementSpeed / 2);
+                isInAir = true;
+            }
+        }
+        if (isGrounded)
+        {
+            if (isInteracting || moveAmount > 0)
+                myTransform.position = Vector3.Lerp(myTransform.position, targetPosition, Time.deltaTime);
+            else
+                myTransform.position = targetPosition;
+        }
     }
     #endregion
     #region Movement

@@ -55,8 +55,16 @@ public class TaskObject : MonoBehaviour
         if ((startTime + thisTask.numToCompletion) >= Time.time)
         {
             curHeldTask.UpdateTaskData(thisTask.numToCompletion, this);
-            toBeActivated.SetActive(true);
-            toBeDeactivated.SetActive(false);
+            if(toBeActivated)
+            {
+                toBeActivated.SetActive(true);
+
+            }
+            if(toBeDeactivated)
+            {
+                toBeDeactivated.SetActive(false);
+
+            }
         }
 
     }
