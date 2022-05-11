@@ -212,7 +212,7 @@ public class PlayerObject : MonoBehaviour
     public void TickInput(float delta) => MoveInput(delta);
     void MoveInput(float delta)
     {
-        horizontal = movementInput.x;
+        horizontal = movementInput.x; 
         vertical = movementInput.y;
         moveAmount = Mathf.Clamp01(Mathf.Abs(horizontal) + Mathf.Abs(vertical));
         mouseX = cameraInput.x;
