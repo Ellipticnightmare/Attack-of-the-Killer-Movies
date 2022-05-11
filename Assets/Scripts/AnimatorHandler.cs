@@ -71,7 +71,7 @@ public class AnimatorHandler : MonoBehaviour
         }
         #endregion
 
-        v = mama.isCrouch ? horizontalMovement > 0 ? .1f : 0 : mama.isSprinting ? 2 : v;
+        v = mama.isCrouch ? verticalMovement > 0 ? .1f : 0 : mama.isSprinting ? 2 : v;
         if (mama.isSprinting && v == .1f)
             PlayTargetAnimation("crouchToRun", false);
         if (v != 0 && h != 0)
