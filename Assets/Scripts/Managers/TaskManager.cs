@@ -46,6 +46,8 @@ public class TaskManager : MonoBehaviour
     }
     public void RemoveFromTasks(TaskUI goal, TaskObject taskGoal)
     {
+        Debug.Log("i should be running haha");
+        activePlayers.AddRange(FindObjectsOfType<PlayerObject>());
         foreach (var obj in activePlayers)
         {
             if (obj == goal.myPlayer)
@@ -58,24 +60,28 @@ public class TaskManager : MonoBehaviour
                         obj.myTasks.Remove(item);
                         obj.myTaskChecks.Remove(item.myTask);
                         obj.UpdateMyUI();
-                        return;
+                        break;
                     }
                 }
             }
         }
+        Debug.Log("i should run 1");
         List<Task> taskChecks = new List<Task>();
         foreach (var item in activeTasks)
         {
             if (item == goal.myTask)
                 taskChecks.Add(item);
         }
+        Debug.Log("i should run 2");
         if (taskChecks.Count <= 1)
         {
             taskGoal.enabled = false;
         }
+        Debug.Log("i should run 3");
         bool canWin = true;
         foreach (var item in activePlayers)
         {
+            Debug.Log(item.name);
             if (item.myTasks.Count >= 1)
                 canWin = false;
         }

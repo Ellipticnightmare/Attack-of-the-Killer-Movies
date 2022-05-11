@@ -43,7 +43,6 @@ public class TaskObject : MonoBehaviour
             RunInteract(other.GetComponent<PlayerObject>());
             foreach(var obj in other.GetComponent<PlayerObject>().myTasks)
             {
-                Debug.Log(obj.taskTitle);
                 if (obj.myTask == thisTask)
                     curHeldTask = obj;
             }

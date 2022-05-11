@@ -34,9 +34,9 @@ public class Jericho : MonoBehaviour
     public virtual void startHuntTrigger(Vector3 newTarget) //Can be manually triggered by Clown
     {
         if (EnemyManager.instance.isPlayerActive(targPlayer) && targPlayer.transform.position == newTarget)
-            FindPath(transform.position, EnemyManager.instance.returnPlayerAttackAngle(targPlayer, this));
+            FindPath(transform.position, EnemyManager.instance.returnPlayerAttackAngle(targPlayer, this)-Vector3.up);
         else
-            FindPath(transform.position, newTarget);
+            FindPath(transform.position, newTarget - Vector3.up);
         targNoise = null;
         updateNodeWeight();
         SFXManager.instance.PlaySound(MyAudio.mySound, MyAudio.mySource.position);
@@ -329,6 +329,7 @@ public class Jericho : MonoBehaviour
     }
     void TryProcessNext()
     {
+        StopAllCoroutines();
         StartCoroutine(FindNewPath(currentPathRequest.pathStart, currentPathRequest.pathEnd));
     }
     void FinishedProcessingPath(Vector3[] path) => currentPathRequest.path = path;
