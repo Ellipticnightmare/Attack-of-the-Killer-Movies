@@ -23,7 +23,6 @@ public class MonsterController : Jericho
         MyNavMeshManager.path = new NavMeshPath();
         BuildNode();
         UpdateWeightingList();
-        Personality = (personality)Random.Range(0, 4);
         MyAIManager.aggroRange = MyAIManager.aggroRange + EnemyManager.instance.difficultyCheck;
         MyAIManager.viewConeRadius = MyAIManager.viewConeRadius + (EnemyManager.instance.difficultyCheck * 1.25f * 1.25f);
         MyAIManager.viewConeAngle = MyAIManager.viewConeAngle + EnemyManager.instance.difficultyCheck;
@@ -32,18 +31,6 @@ public class MonsterController : Jericho
     // Update is called once per frame
     void Update()
     {
-        realMovSpeed = MyAIManager.moveSpeed;
-        switch (Personality)
-        {
-            case personality.Aggressive:
-                if (EnemyManager.instance.NodeFromWorldPoint(transform.position).corridor)
-                    realMovSpeed = MyAIManager.moveSpeed * 1.5f;
-                break;
-            case personality.Cocky:
-                if (EnemyManager.instance.NodeFromWorldPoint(transform.position).openArea)
-                    realMovSpeed = MyAIManager.moveSpeed * 1.5f;
-                break;
-        }
         if (specialEventTimer >= 0 && specialEventTimerSet > 0)
             specialEventTimer--;
         else
@@ -122,7 +109,7 @@ public class MonsterController : Jericho
                 if (trackTimer >= 0)
                 {
                     trackTimer -= Time.deltaTime;
-                    FindPath(transform.position, targPlayer.transform.position);
+                    MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
                 }
                 else
                 {
@@ -132,7 +119,7 @@ public class MonsterController : Jericho
                         {
                             if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
                             {
-                                FindPath(transform.position, targPlayer.transform.position);
+                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
                             }
                             else
                             {
@@ -147,7 +134,7 @@ public class MonsterController : Jericho
                             if (clownTimer >= 0)
                             {
                                 clownTimer--;
-                                FindPath(transform.position, targPlayer.transform.position);
+                                MyNavMeshManager.agent.SetDestination(targPlayer.transform.position);
                             }
                             else
                             {
@@ -188,40 +175,33 @@ public class MonsterController : Jericho
                     MyAnimations.anim.SetInteger("state", 3); //Attack anim
                 break;
         }
-        if (hasFinishedPath)
+        if (!MyNavMeshManager.agent.pathPending)
         {
-            if (attackCooldownReal >= attackCooldown)
+            if (MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance)
             {
-                switch (MyAIManager.EnemyState)
+                if (attackCooldownReal >= attackCooldown)
                 {
-                    case aiManager.enemyState.Roam:
-                        BuildNode();
-                        break;
-                    case aiManager.enemyState.Hunting:
-                        MyAIManager.EnemyState = aiManager.enemyState.Roam;
-                        BuildNode();
-                        break;
-                    case aiManager.enemyState.Chase:
-                        attack(targPlayer);
-                        break;
-                    case aiManager.enemyState.targetBarricades:
-                        hitBarricade();
-                        break;
-                    case aiManager.enemyState.Attack:
-                        attack(targPlayer);
-                        break;
+                    switch (MyAIManager.EnemyState)
+                    {
+                        case aiManager.enemyState.Roam:
+                            BuildNode();
+                            break;
+                        case aiManager.enemyState.Hunting:
+                            MyAIManager.EnemyState = aiManager.enemyState.Roam;
+                            BuildNode();
+                            break;
+                        case aiManager.enemyState.Chase:
+                            attack(targPlayer);
+                            break;
+                        case aiManager.enemyState.targetBarricades:
+                            hitBarricade();
+                            break;
+                        case aiManager.enemyState.Attack:
+                            attack(targPlayer);
+                            break;
+                    }
+                    attackCooldownReal = 0;
                 }
-                attackCooldownReal = 0;
-                hasFinishedPath = false;
-                processingPath = false;
-            }
-        }
-        else
-        {
-            if (!processingPath)
-            {
-                processingPath = true;
-                StartCoroutine(FollowPath());
             }
         }
     }
