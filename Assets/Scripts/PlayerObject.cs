@@ -102,7 +102,7 @@ public class PlayerObject : MonoBehaviour
     [Header("Ground & Air Detection Stats")]
     float groundDetectionRayStartPoint = .5f;
     float minimumDistanceNeededToBeginFall = 1f;
-    float groundDetectionRayDistance = .2f;
+    public float groundDetectionRayDistance = .2f;
     public LayerMask ignoreForGroundCheck;
     public float inAirTimer;
     public float fallingSpeed = 45;
