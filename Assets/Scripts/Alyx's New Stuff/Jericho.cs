@@ -13,26 +13,22 @@ public class Jericho : MonoBehaviour
     public aiManager MyAIManager;
     public navmeshManager MyNavMeshManager;
     [HideInInspector]
-    public PlayerObject targPlayer;
-    [HideInInspector]
-    public SoundPoint targNoise;
+    public Transform targPoint;
     Vector3 avoidDest;
     [HideInInspector]
-    public Barrier targBar;
+    public float trackTimer, stunTimer, attackCooldown, attackCooldownReal, stallTimer;
     [HideInInspector]
-    public float trackTimer, stunTimer, attackCooldown, attackCooldownReal;
-    [HideInInspector]
-    public bool isStun, isTargetingBarricades, isHunting, isVanish;
+    public bool isStun, isHunting, isVanish, isStalled, respawn;
 
     #region Pathfinding
     #region Generic
     public virtual void startHuntTrigger(Vector3 newTarget) //Can be manually triggered by Clown
     {
         MyNavMeshManager.agent.SetDestination(newTarget);
-        targNoise = null;
+        targPoint = null;
         updateNodeWeight();
-       if(MyAudio.hasSound)
-        SFXManager.instance.PlaySound(MyAudio.mySound, this.transform.position);
+        if(MyAudio.hasSound)
+            SFXManager.instance.PlaySound(MyAudio.mySound, this.transform.position);
         MyAIManager.EnemyState = aiManager.enemyState.Chase;
     }
     public void UpdateWeightingList()
@@ -46,11 +42,11 @@ public class Jericho : MonoBehaviour
         int newI = 0;
         for (int i = 0; i < MyNavMeshManager.nodeWeb.Count; i++)
         {
-            if (Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer.transform.position) < distance)
+            if (Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer().transform.position) < distance)
             {
                 x = MyNavMeshManager.nodeWeb[i];
                 newI = i;
-                distance = Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer.transform.position);
+                distance = Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer().transform.position);
             }
         }
         x.weighting = 100;
@@ -70,7 +66,7 @@ public class Jericho : MonoBehaviour
         int genWeighting = (int)(100 - minDist);
         return output;
     }
-    public bool canSeePlayer()
+    bool canSeePlayer()
     {
         bool output = false;
         List<PlayerObject> visibleTargets = new List<PlayerObject>();
@@ -98,20 +94,19 @@ public class Jericho : MonoBehaviour
                 if (Vector3.Distance(item.transform.position, this.transform.position) < minDist)
                 {
                     minDist = Vector3.Distance(item.transform.position, this.transform.position);
-                    targPlayer = item;
+                    targPoint = item.transform;
                 }
             }
         }
         return output;
     }
-    public bool hearSound()
+    bool hearSound()
     {
         bool output = false;
         List<SoundPoint> soundTargets = new List<SoundPoint>();
         soundTargets.Clear();
         Collider[] targetsInHearRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.hearingRadius, MyAIManager.soundMask);
         float distCheck = MyAIManager.hearingRadius + 1;
-        int x = -1;
         for (int i = 0; i < targetsInHearRadius.Length; i++)
         {
             float dstToTarget = Vector3.Distance(this.transform.position, targetsInHearRadius[i].transform.position);
@@ -120,12 +115,47 @@ public class Jericho : MonoBehaviour
                 dstToTarget = dstToTarget + 4;
             if (dstToTarget < distCheck && targetsInHearRadius[i].GetComponent<SoundPoint>() != null)
             {
-                targNoise = targetsInHearRadius[i].GetComponent<SoundPoint>();
+                targPoint = targetsInHearRadius[i].GetComponent<SoundPoint>().transform;
                 distCheck = dstToTarget;
                 output = true;
             }
         }
         return output;
+    }
+    public PlayerObject targPlayer()
+    {
+        PlayerObject output = null;
+        List<PlayerObject> visibleTargets = new List<PlayerObject>();
+        visibleTargets.Clear();
+        Collider[] targetsInViewRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.viewConeRadius, MyAIManager.targetMask);
+        for (int i = 0; i < targetsInViewRadius.Length; i++)
+        {
+            Transform target = targetsInViewRadius[i].transform;
+            Vector3 dirToTarget = (target.position - this.transform.position).normalized;
+            if(Vector3.Angle(transform.forward, dirToTarget) < MyAIManager.viewConeAngle / 2)
+            {
+                float dstToTarget = Vector3.Distance(this.transform.position, target.position);
+                if (!Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z + 1), dirToTarget, dstToTarget, MyAIManager.obstacleMask))
+                    visibleTargets.Add(target.GetComponent<PlayerObject>());
+            }
+        }
+        if (visibleTargets.Count > 0)
+        {
+            float minDist = Mathf.Infinity;
+            foreach (var item in visibleTargets)
+            {
+                if(Vector3.Distance(item.transform.position, this.transform.position) < minDist)
+                {
+                    minDist = Vector3.Distance(item.transform.position, this.transform.position);
+                    output = item;
+                }
+            }
+        }
+        return output;
+    }
+    public bool receivedEnvironmentInput()
+    {
+        return canSeePlayer() ? true : hearSound() ? true : false;
     }
     public Vector3 DirFromAngle(float angleInDegrees, bool angleIsGlobal)
     {
@@ -138,12 +168,10 @@ public class Jericho : MonoBehaviour
     #endregion
     #region NavMesh
     public virtual void BuildNode()
-    {
-        if (MyAIManager.tensionIndex > MyAIManager.patienceIndex)
-            MyAIManager.EnemyState = aiManager.enemyState.Hunting;
+    { 
         bool isValidNewWebPoint = true;
         Vector3 newPoint = Vector3.zero;
-        if (EnemyManager.instance.difficultyCheck >= 15 && MyAIManager.EnemyState == aiManager.enemyState.Hunting)
+        if (EnemyManager.instance.difficultyCheck >= 15 && MyAIManager.tensionIndex > MyAIManager.patienceIndex)
         {
             MyAIManager.patienceIndex--;
             MyAIManager.tensionIndex = 0;
@@ -258,45 +286,6 @@ public class Jericho : MonoBehaviour
             }
         }
     }
-    public virtual void pingBarricade(bool fromPlayer)
-    {
-        float hitRange = fromPlayer ? 50 : 5;
-        Vector3 startPos = fromPlayer ? targPlayer.transform.position : transform.position;
-        int index = -1;
-        Collider[] Barricades;
-        Barricades = Physics.OverlapSphere(startPos, hitRange);
-        if (Barricades.Length > 0)
-        {
-            List<Barrier> destrucTargs = new List<Barrier>();
-            foreach (var item in Barricades)
-            {
-                if (item.GetComponent<Barrier>() != null)
-                    destrucTargs.Add(item.GetComponent<Barrier>());
-            }
-            float distancetoTarg = Mathf.Infinity;
-            if (destrucTargs.Count > 0)
-            {
-                for (int i = 0; i < destrucTargs.Count; i++)
-                {
-                    float distCheck = Vector3.Distance(destrucTargs[i].transform.position, startPos);
-                    if (distCheck < distancetoTarg)
-                    {
-                        distancetoTarg = distCheck;
-                        targBar = destrucTargs[i];
-                        index = i;
-                    }
-                }
-                if (targBar != null)
-                    MyNavMeshManager.agent.SetDestination(targBar.transform.position);
-                else
-                    Debug.Log(destrucTargs[index]);
-            }
-            else
-                BuildNode();
-        }
-        else
-            BuildNode();
-    }
     public Vector3 RandomNavmeshLocation(float radius)
     {
         Vector3 randomDirection = Random.insideUnitSphere * radius;
@@ -330,11 +319,6 @@ public class Jericho : MonoBehaviour
             MyAnimations.anim.SetInteger("state", 3); //Attack anim
         player.takeDamage();
     }
-    public virtual void hitBarricade() //Doesn't get run by Dracula or Blob
-    {
-        MyAIManager.EnemyState = aiManager.enemyState.Attack;
-        targBar.Open();
-    }
     public virtual void VanishEnemy()
     {
         MyAnimations.anim.CrossFade("VanishAnim", 0.2f); //Animation MUST be named this
@@ -347,14 +331,29 @@ public class Jericho : MonoBehaviour
     public virtual void FinishHit()
     {
         MyAIManager.EnemyState = aiManager.enemyState.Roam;
-        targBar = null;
-        targPlayer = null;
+        targPoint = null;
         BuildNode();
     }
     public virtual void StartStun(float stunTime)
     {
         stunTimer = stunTime;
         MyAIManager.EnemyState = aiManager.enemyState.Stunned;
+    }
+    public virtual void RespawnEnemyAtClosestPoint(Vector3 startPoint)
+    {
+        Vector3 newTransform = Vector3.zero;
+        PlayerObject[] players = FindObjectsOfType<PlayerObject>();
+        while (newTransform == Vector3.zero)
+        {
+            Vector3 newTestTransform = RandomNavmeshLocation(MyNavMeshManager.walkRadius);
+            if(NavMesh.CalculatePath(startPoint, players[0].transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+            {
+                if(MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                    newTransform = newTestTransform;
+            }
+        }
+        transform.position = newTransform;
+        stallTimer = 0;
     }
     #endregion
 }

@@ -238,8 +238,7 @@ public class aiManager
         Stunned,
         Roam,
         Chase,
-        Attack,
-        Hunting, //Only triggers on difficulty 15
+        Attack
     };
 }
 [System.Serializable]

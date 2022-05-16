@@ -18,8 +18,8 @@ public class Balloon : MonoBehaviour
             {
                 EnemyManager.instance.Balloons.balloonCount--;
                 Clown.startHuntTrigger(this.transform.position);
-                Clown.clownTimer = clownTimer;
-                Clown.targPlayer = other.GetComponent<PlayerObject>();
+                Clown.trackTimer = 120;
+                Clown.targPoint = other.transform;
                 SFXManager.instance.PlaySound(MyAudio.mySound, transform.position);
                 Destroy(this.gameObject);
             }
