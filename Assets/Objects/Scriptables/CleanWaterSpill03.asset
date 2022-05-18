@@ -12,7 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86dbdb7bd7c09014ea2fef632ae2b525, type: 3}
   m_Name: CleanWaterSpill03
   m_EditorClassIdentifier: 
-  goalType: 1
-  title: Clean up the spill in the cafeteria
+  title: Clean up the spill in the Cafeteria
   description: Who keeps spilling this water everywhere?
-  numToCompletion: 3

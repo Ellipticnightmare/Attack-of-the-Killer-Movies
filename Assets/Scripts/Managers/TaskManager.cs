@@ -126,7 +126,7 @@ public class TaskManager : MonoBehaviour
             activePlayers[i].myTasks.AddRange(listOfLists[i]);
         }
         yield return new WaitForEndOfFrame();
-        Destroy(player.gameObject);
+        //Destroy(player.gameObject);
         FindObjectOfType<SwapManager>().StartSwap(player);
         UpdateWorld();
     }

@@ -89,6 +89,9 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("PlayerDied");
         TaskManager.instance.PlayerDied(player);
+        Destroy(player.gameObject);
+        FindObjectOfType<SwapManager>().StartSwap(player);
+        
     }
     public void togglePause()
     {

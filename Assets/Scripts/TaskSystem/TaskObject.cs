@@ -19,6 +19,17 @@ public class TaskObject : MonoBehaviour
         {
             Debug.Log("Interacting");
             TaskManager.instance.RemoveFromTasks(assignedKin, thisTask);
+            foreach (Transform child in transform)
+            {
+                Destroy(child.gameObject);
+            }
+
+            /*
+            foreach(GameObject child in this.gameObject.GetComponentsInChildren<GameObject>())
+            {
+                child.SetActive(false);
+            }
+            */
         }
     }
     private void OnTriggerStay(Collider other)
@@ -33,6 +44,7 @@ public class TaskObject : MonoBehaviour
                     {
                         assignedKin = other.GetComponent<PlayerObject>();
                         Debug.Log("I've found my Kinnie uwu");
+                        
                     }
                 }
             }

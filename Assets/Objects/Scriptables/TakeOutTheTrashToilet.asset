@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86dbdb7bd7c09014ea2fef632ae2b525, type: 3}
   m_Name: TakeOutTheTrashToilet
   m_EditorClassIdentifier: 
-  title: Take Out the trash in The Toilet
+  title: Take Out the trash in the bathroom
   description: It just keeps pilling up
