@@ -30,7 +30,7 @@ public class MonsterController : Jericho
     // Update is called once per frame
     void Update()
     {
-        isStalled = transform.position == myPoint;
+        isStalled = transform.position == myPoint && !MyNavMeshManager.agent.pathPending;
         if (!isStalled)
         {
             if (specialEventTimer >= 0 && specialEventTimerSet > 0)
@@ -143,8 +143,14 @@ public class MonsterController : Jericho
                             if (attackCooldownReal >= attackCooldown)
                             {
                                 if (isHunting)
-                                    attack(targPlayer());
-                                else
+                                {
+                                    PlayerObject newTarg = targPlayer();
+                                    attack(newTarg);
+                                    isHunting = false;
+                                    MyAIManager.EnemyState = aiManager.enemyState.Roam;
+                                    
+                                }
+                                
                                     BuildNode();
                                 attackCooldownReal = 0;
                             }

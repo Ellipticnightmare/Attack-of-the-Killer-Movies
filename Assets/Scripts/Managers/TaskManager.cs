@@ -107,12 +107,8 @@ public class TaskManager : MonoBehaviour
         List<PlayerObject> curLivingPlayers = new List<PlayerObject>();
         curLivingPlayers.AddRange(FindObjectsOfType<PlayerObject>());
         yield return new WaitForEndOfFrame();
-        PlayerObject diedPlayer = null;
-        foreach (var item in activePlayers)
-        {
-            if (!curLivingPlayers.Contains(item))
-                diedPlayer = item;
-        }
+        PlayerObject diedPlayer = player;
+        
         yield return new WaitForEndOfFrame();
         activePlayers.Remove(diedPlayer);
         yield return new WaitForEndOfFrame();
