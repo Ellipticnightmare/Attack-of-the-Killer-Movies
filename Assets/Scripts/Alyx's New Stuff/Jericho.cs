@@ -30,6 +30,7 @@ public class Jericho : MonoBehaviour
         if(MyAudio.hasSound)
             SFXManager.instance.PlaySound(MyAudio.mySound, this.transform.position);
         MyAIManager.EnemyState = aiManager.enemyState.Chase;
+        isHunting = true;
     }
     public void UpdateWeightingList()
     {
