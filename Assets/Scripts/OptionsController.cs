@@ -11,8 +11,23 @@ public class OptionsController : MonoBehaviour {
     // Start is called before the first frame update
     void Start()
     {
-        mouseSensitivitySlider.value = PlayerPrefs.GetFloat("Sensitivity");
-        volumeSlider.value = PlayerPrefs.GetFloat("Volume");
+        if (PlayerPrefs.HasKey("Sensitivity"))
+        {
+            mouseSensitivitySlider.value = PlayerPrefs.GetFloat("Sensitivity");
+        }
+        else
+        {
+            mouseSensitivitySlider.value = 0.13f;
+        }
+        if (PlayerPrefs.HasKey("Volume"))
+        {
+            volumeSlider.value = PlayerPrefs.GetFloat("Volume");
+        }
+        else
+        {
+            volumeSlider.value = 0.5f;
+        }
+        
     }
 
     // Update is called once per frame
