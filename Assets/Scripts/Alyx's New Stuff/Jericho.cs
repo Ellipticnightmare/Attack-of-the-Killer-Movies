@@ -30,6 +30,7 @@ public class Jericho : MonoBehaviour
         if(MyAudio.hasSound)
             SFXManager.instance.PlaySound(MyAudio.mySound, this.transform.position);
         MyAIManager.EnemyState = aiManager.enemyState.Chase;
+        isHunting = true;
     }
     public void UpdateWeightingList()
     {
@@ -295,7 +296,7 @@ public class Jericho : MonoBehaviour
     public virtual void attack(PlayerObject player) //For damage logic and unique effects
     {
         if (player == null)
-           // Debug.Break();
+            Debug.Break();
         Debug.Log("AttackingPlayer");
         MyAIManager.EnemyState = aiManager.enemyState.Attack;
         if (MyAnimations.hasAnimations)
@@ -339,7 +340,6 @@ public class Jericho : MonoBehaviour
         stallTimer = 0;
         isStalled = false;
         respawn = false;
-        
     }
     #endregion
 }

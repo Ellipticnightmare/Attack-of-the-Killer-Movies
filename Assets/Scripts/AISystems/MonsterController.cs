@@ -83,9 +83,7 @@ public class MonsterController : Jericho
                         {
                             if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
                             {
-                                MyNavMeshManager.agent.SetDestination(targPoint.position);
-                                isHunting = true;
-                                MyAIManager.EnemyState = aiManager.enemyState.Chase;
+                                startHuntTrigger(targPoint.position);
                             }
                         }
                     }
@@ -99,12 +97,12 @@ public class MonsterController : Jericho
                         else
                             isHunting = false;
                         PlayerObject victim = targPlayer();
-                        if(victim != null)
+                        if (victim != null)
                         {
-                            if(NavMesh.CalculatePath(transform.position, victim.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                            if (NavMesh.CalculatePath(transform.position, victim.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
                             {
                                 if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                                    MyNavMeshManager.agent.SetDestination(victim.transform.position);
+                                    startHuntTrigger(victim.transform.position);
                             }
                         }
                     }
@@ -122,7 +120,7 @@ public class MonsterController : Jericho
                                     if (NavMesh.CalculatePath(transform.position, targPoint.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
                                     {
                                         if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                                            MyNavMeshManager.agent.SetDestination(targPoint.transform.position);
+                                            startHuntTrigger(targPoint.transform.position);
                                         else
                                             isHunting = false;
                                     }
@@ -148,10 +146,8 @@ public class MonsterController : Jericho
                                     attack(newTarg);
                                     isHunting = false;
                                     MyAIManager.EnemyState = aiManager.enemyState.Roam;
-                                    
                                 }
-                                
-                                    BuildNode();
+                                BuildNode();
                                 attackCooldownReal = 0;
                             }
                         }
