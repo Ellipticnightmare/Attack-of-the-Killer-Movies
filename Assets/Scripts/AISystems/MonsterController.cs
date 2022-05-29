@@ -30,7 +30,7 @@ public class MonsterController : Jericho
     // Update is called once per frame
     void Update()
     {
-        isStalled = transform.position == myPoint;
+        isStalled = transform.position == myPoint && !MyNavMeshManager.agent.pathPending;
         if (!isStalled)
         {
             if (specialEventTimer >= 0 && specialEventTimerSet > 0)
@@ -99,9 +99,9 @@ public class MonsterController : Jericho
                         else
                             isHunting = false;
                         PlayerObject victim = targPlayer();
-                        if(victim != null)
+                        if (victim != null)
                         {
-                            if(NavMesh.CalculatePath(transform.position, victim.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                            if (NavMesh.CalculatePath(transform.position, victim.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
                             {
                                 if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
                                     MyNavMeshManager.agent.SetDestination(victim.transform.position);
@@ -143,9 +143,13 @@ public class MonsterController : Jericho
                             if (attackCooldownReal >= attackCooldown)
                             {
                                 if (isHunting)
-                                    attack(targPlayer());
-                                else
-                                    BuildNode();
+                                {
+                                    PlayerObject newTarg = targPlayer();
+                                    attack(newTarg);
+                                    isHunting = false;
+                                    MyAIManager.EnemyState = aiManager.enemyState.Roam;
+                                }
+                                BuildNode();
                                 attackCooldownReal = 0;
                             }
                         }

@@ -125,30 +125,13 @@ public class Jericho : MonoBehaviour
     public PlayerObject targPlayer()
     {
         PlayerObject output = null;
-        List<PlayerObject> visibleTargets = new List<PlayerObject>();
-        visibleTargets.Clear();
-        Collider[] targetsInViewRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.viewConeRadius, MyAIManager.targetMask);
-        for (int i = 0; i < targetsInViewRadius.Length; i++)
+        PlayerObject[] allPlayers = FindObjectsOfType<PlayerObject>();
+        foreach (var item in allPlayers)
         {
-            Transform target = targetsInViewRadius[i].transform;
-            Vector3 dirToTarget = (target.position - this.transform.position).normalized;
-            if(Vector3.Angle(transform.forward, dirToTarget) < MyAIManager.viewConeAngle / 2)
+            if (Vector3.Distance(item.transform.position, this.transform.position) <= MyNavMeshManager.agent.stoppingDistance + .1f)
             {
-                float dstToTarget = Vector3.Distance(this.transform.position, target.position);
-                if (!Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z + 1), dirToTarget, dstToTarget, MyAIManager.obstacleMask))
-                    visibleTargets.Add(target.GetComponent<PlayerObject>());
-            }
-        }
-        if (visibleTargets.Count > 0)
-        {
-            float minDist = Mathf.Infinity;
-            foreach (var item in visibleTargets)
-            {
-                if(Vector3.Distance(item.transform.position, this.transform.position) < minDist)
-                {
-                    minDist = Vector3.Distance(item.transform.position, this.transform.position);
-                    output = item;
-                }
+                output = item;
+                break;
             }
         }
         return output;
@@ -354,6 +337,8 @@ public class Jericho : MonoBehaviour
         }
         transform.position = newTransform;
         stallTimer = 0;
+        isStalled = false;
+        respawn = false;
     }
     #endregion
 }
