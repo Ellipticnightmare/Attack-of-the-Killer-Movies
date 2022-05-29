@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
     }
     private void FixedUpdate()
     {
+        Debug.Log(tMod);
         timeSpent += Time.deltaTime * tMod;
         minutes = ((int)timeSpent / 60).ToString();
         seconds = (timeSpent % 60).ToString("f2");

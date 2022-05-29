@@ -21,7 +21,6 @@ public class MonsterController : Jericho
         MyAnimations.anim = this.GetComponent<Animator>();
         MyNavMeshManager.path = new NavMeshPath();
         BuildNode();
-        UpdateWeightingList();
         MyAIManager.aggroRange = MyAIManager.aggroRange + EnemyManager.instance.difficultyCheck;
         MyAIManager.viewConeRadius = MyAIManager.viewConeRadius + (EnemyManager.instance.difficultyCheck * 1.25f * 1.25f);
         MyAIManager.viewConeAngle = MyAIManager.viewConeAngle + EnemyManager.instance.difficultyCheck;
@@ -30,79 +29,52 @@ public class MonsterController : Jericho
     // Update is called once per frame
     void Update()
     {
-        isStalled = transform.position == myPoint && !MyNavMeshManager.agent.pathPending;
-        if (!isStalled)
+        MyNavMeshManager.maximumWebSize = Mathf.Clamp(MyNavMeshManager.maximumWebSize, 7, 15);
+        MyNavMeshManager.revisitThreshold = Mathf.Clamp(MyNavMeshManager.revisitThreshold, 69, 91);
+        MyNavMeshManager.agent.speed = MyAIManager.moveSpeed * GameManager.instance.tMod;
+        MyNavMeshManager.agent.angularSpeed = MyAIManager.rotSpeed * GameManager.instance.tMod;
+        if (GameManager.instance.tMod > 0)
         {
-            if (specialEventTimer >= 0 && specialEventTimerSet > 0)
-                specialEventTimer--;
-            else
+            if (transform.position == myPoint && MyNavMeshManager.agent.pathPending)
+                isStalled = true;
+            if (isStalled && stallTimer <= 2)
+                stallTimer += Time.deltaTime * 1;
+            else if(stallTimer > 2)
+                RespawnEnemyAtClosestPoint(transform.position);
+
+            if (stallTimer < 2)
             {
-                if (specialEventTimerSet > 0)
+                if (specialEventTimer >= 0 && specialEventTimerSet > 0)
+                    specialEventTimer--;
+                else
                 {
-                    specialEventTimer = specialEventTimerSet;
-                    EnemyManager.instance.triggerUniqueSpawn(this);
-                }
-            }
-            MyNavMeshManager.maximumWebSize = Mathf.Clamp(MyNavMeshManager.maximumWebSize, 7, 15);
-            MyNavMeshManager.revisitThreshold = Mathf.Clamp(MyNavMeshManager.revisitThreshold, 69, 91);
-            if (attackCooldownReal < attackCooldown)
-                attackCooldownReal += Time.deltaTime;
-            MyNavMeshManager.agent.speed = MyAIManager.moveSpeed;
-            MyNavMeshManager.agent.angularSpeed = MyAIManager.rotSpeed;
-            switch (MyAIManager.EnemyState)
-            {
-                case aiManager.enemyState.Stunned:
-                    MyAnimations.anim.SetInteger("state", 2); //Dizzy/stun anim
-                    MyNavMeshManager.agent.speed = 0;
-                    MyNavMeshManager.agent.angularSpeed = 0;
-                    if (stunTimer >= 0)
-                        stunTimer -= Time.deltaTime;
-                    else
+                    if (specialEventTimerSet > 0)
                     {
-                        BuildNode();
-                        MyAIManager.EnemyState = aiManager.enemyState.Roam;
+                        specialEventTimer = specialEventTimerSet;
+                        EnemyManager.instance.triggerUniqueSpawn(this);
                     }
-                    break;
-                case aiManager.enemyState.Roam:
-                    MyAnimations.anim.SetInteger("state", 0);
-                    break;
-                case aiManager.enemyState.Chase:
-                    MyAnimations.anim.SetInteger("state", 1);
-                    break;
-                case aiManager.enemyState.Attack:
-                    MyAnimations.anim.SetInteger("state", 3);
-                    break;
-            }
-            if (MyAIManager.EnemyState == aiManager.enemyState.Roam || MyAIManager.EnemyState == aiManager.enemyState.Chase)
-            {
-                if (!isHunting)
+                }
+                if (MyAIManager.EnemyState == aiManager.enemyState.Roam)
                 {
-                    if (receivedEnvironmentInput() && Enemy != enemy.Clown)
+                    if (receivedEnvironmentInput() && targPoint != null)
                     {
                         if (NavMesh.CalculatePath(transform.position, targPoint.position, NavMesh.AllAreas, MyNavMeshManager.path))
                         {
-                            if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                            {
+                            if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete && Enemy != enemy.Clown)
                                 startHuntTrigger(targPoint.position);
-                            }
                         }
                     }
                 }
-                else
+                else if(MyAIManager.EnemyState == aiManager.enemyState.Chase)
                 {
-                    if (Enemy == enemy.Clown)
+                    if (targPlayer == null)
                     {
-                        if (trackTimer >= 0)
-                            trackTimer -= Time.deltaTime;
-                        else
-                            isHunting = false;
-                        PlayerObject victim = targPlayer();
-                        if (victim != null)
+                        if (canSeePlayer())
                         {
-                            if (NavMesh.CalculatePath(transform.position, victim.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
+                            if (NavMesh.CalculatePath(transform.position, targPoint.position, NavMesh.AllAreas, MyNavMeshManager.path))
                             {
                                 if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                                    startHuntTrigger(victim.transform.position);
+                                    startHuntTrigger(targPlayer.transform.position);
                             }
                         }
                     }
@@ -112,70 +84,41 @@ public class MonsterController : Jericho
                             trackTimer -= Time.deltaTime;
                         else
                         {
-                            trackTimer = 2;
-                            if (MyAIManager.EnemyState == aiManager.enemyState.Chase)
+                            trackTimer = .75f;
+                            if (receivedEnvironmentInput() && targPoint != null)
                             {
-                                if (receivedEnvironmentInput())
+                                if (NavMesh.CalculatePath(transform.position, targPoint.position, NavMesh.AllAreas, MyNavMeshManager.path))
                                 {
-                                    if (NavMesh.CalculatePath(transform.position, targPoint.transform.position, NavMesh.AllAreas, MyNavMeshManager.path))
-                                    {
-                                        if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
-                                            startHuntTrigger(targPoint.transform.position);
-                                        else
-                                            isHunting = false;
-                                    }
+                                    if (MyNavMeshManager.path.status == NavMeshPathStatus.PathComplete)
+                                        startHuntTrigger(targPoint.position);
                                 }
-                                else
-                                    isHunting = false;
                             }
-                        }
-                    }
-                }
-                if (!MyNavMeshManager.agent.pathPending)
-                {
-                    if (MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance)
-                    {
-                        MyNavMeshManager.agent.velocity = new Vector3(0, 0, 0);
-                        if (!MyNavMeshManager.agent.hasPath || MyNavMeshManager.agent.velocity.sqrMagnitude == 0)
-                        {
-                            if (attackCooldownReal >= attackCooldown)
-                            {
-                                if (isHunting)
-                                {
-                                    PlayerObject newTarg = targPlayer();
-                                    attack(newTarg);
-                                    isHunting = false;
-                                    MyAIManager.EnemyState = aiManager.enemyState.Roam;
-                                }
-                                BuildNode();
-                                attackCooldownReal = 0;
-                            }
+                            else
+                                MyAIManager.EnemyState = aiManager.enemyState.Roam;
                         }
                     }
                 }
             }
-        }
-        else
-        {
-            if (!respawn)
+            if (!MyNavMeshManager.agent.pathPending)
             {
-                stallTimer += Time.deltaTime;
-                respawn = stallTimer > 1.1f;
-                if (stallTimer > 1.1f)
+                if (MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance)
                 {
-                    RespawnEnemyAtClosestPoint(myPoint);
+                    MyNavMeshManager.agent.velocity = new Vector3(0, 0, 0);
+                    if (!MyNavMeshManager.agent.hasPath || MyNavMeshManager.agent.velocity.sqrMagnitude == 0)
+                    {
+                        if (MyAIManager.EnemyState == aiManager.enemyState.Chase)
+                            Attack();
+                        else
+                            BuildNode();
+                    }
                 }
             }
         }
     }
     private void LateUpdate() => myPoint = transform.position;
     public override void BuildNode() => base.BuildNode();
-    public override void attack(PlayerObject player) => base.attack(player);
-    public override void startHuntTrigger(Vector3 position) => base.startHuntTrigger(position);
-    public override void VanishEnemy() => base.VanishEnemy();
-    public override void ReturnEnemy() => base.ReturnEnemy();
+    public void Attack() => attack(targPlayer);
     public override void FinishHit() => base.FinishHit();
-    public override void StartStun(float stunTime) => base.StartStun(stunTime);
     public enum enemy
     {
         Blob,

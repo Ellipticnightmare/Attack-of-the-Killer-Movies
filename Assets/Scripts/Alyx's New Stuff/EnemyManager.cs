@@ -215,7 +215,6 @@ public class aiManager
     public float viewConeRadius = 13f;
     [Range(0, 360)]
     public float viewConeAngle = 190;
-    public List<weightedAngles> myPreferredAngles = new List<weightedAngles>();
     [Range(5, 20)]
     public float aggroRange = 10;
     [Tooltip("This is ONLY the players")]
@@ -227,7 +226,6 @@ public class aiManager
     [Range(3, 5)]
     public float moveSpeed = 3;
     public float rotSpeed = 100;
-    public float turnDst = 5;
     public enemyState EnemyState = enemyState.Roam;
     #region SurvivorDifficulty
     [HideInInspector]
@@ -235,7 +233,6 @@ public class aiManager
     #endregion
     public enum enemyState
     {
-        Stunned,
         Roam,
         Chase,
         Attack

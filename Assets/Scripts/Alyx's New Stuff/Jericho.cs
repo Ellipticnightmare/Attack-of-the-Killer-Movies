@@ -16,25 +16,22 @@ public class Jericho : MonoBehaviour
     public Transform targPoint;
     Vector3 avoidDest;
     [HideInInspector]
-    public float trackTimer, stunTimer, attackCooldown, attackCooldownReal, stallTimer;
+    public float trackTimer, attackCooldown, attackCooldownReal, stallTimer;
     [HideInInspector]
-    public bool isStun, isHunting, isVanish, isStalled, respawn;
-
+    public bool isStalled;
+    public PlayerObject targPlayer;
     #region Pathfinding
     #region Generic
     public virtual void startHuntTrigger(Vector3 newTarget) //Can be manually triggered by Clown
     {
+        MyNavMeshManager.agent.destination = newTarget;
+        MyNavMeshManager.agent.velocity = new Vector3(0, 0, 0);
         MyNavMeshManager.agent.SetDestination(newTarget);
-        targPoint = null;
         updateNodeWeight();
         if(MyAudio.hasSound)
             SFXManager.instance.PlaySound(MyAudio.mySound, this.transform.position);
         MyAIManager.EnemyState = aiManager.enemyState.Chase;
-        isHunting = true;
-    }
-    public void UpdateWeightingList()
-    {
-        MyAIManager.myPreferredAngles.Sort((x, y) => y.nodeWeighting.CompareTo(x.nodeWeighting));
+        targPoint = null;
     }
     void updateNodeWeight() //gets run when enemy spots player for the first time, exiting the Roam state
     {
@@ -43,11 +40,11 @@ public class Jericho : MonoBehaviour
         int newI = 0;
         for (int i = 0; i < MyNavMeshManager.nodeWeb.Count; i++)
         {
-            if (Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer().transform.position) < distance)
+            if (Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPoint.transform.position) < distance)
             {
                 x = MyNavMeshManager.nodeWeb[i];
                 newI = i;
-                distance = Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer().transform.position);
+                distance = Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPoint.transform.position);
             }
         }
         x.weighting = 100;
@@ -67,35 +64,26 @@ public class Jericho : MonoBehaviour
         int genWeighting = (int)(100 - minDist);
         return output;
     }
-    bool canSeePlayer()
+    public bool canSeePlayer()
     {
         bool output = false;
-        List<PlayerObject> visibleTargets = new List<PlayerObject>();
-        visibleTargets.Clear();
-        Collider[] targetsInViewRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.viewConeRadius, MyAIManager.targetMask);
-        for (int i = 0; i < targetsInViewRadius.Length; i++)
+        PlayerObject[] targets = FindObjectsOfType<PlayerObject>();
+        foreach (var item in targets)
         {
-            Transform target = targetsInViewRadius[i].transform;
+            Transform target = item.transform;
             Vector3 dirToTarget = (target.position - this.transform.position).normalized;
+            RaycastHit hit;
             if (Vector3.Angle(transform.forward, dirToTarget) < MyAIManager.viewConeAngle / 2)
             {
-                float dstToTarget = Vector3.Distance(this.transform.position, target.position);
-                if (!Physics.Raycast(new Vector3(transform.position.x, transform.position.y, transform.position.z + 1), dirToTarget, dstToTarget, MyAIManager.obstacleMask))
+                if(Physics.Raycast(transform.position, dirToTarget, out hit, MyAIManager.aggroRange))
                 {
-                    visibleTargets.Add(target.GetComponent<PlayerObject>());
-                }
-            }
-        }
-        if (visibleTargets.Count > 0)
-        {
-            output = true;
-            float minDist = Mathf.Infinity;
-            foreach (var item in visibleTargets)
-            {
-                if (Vector3.Distance(item.transform.position, this.transform.position) < minDist)
-                {
-                    minDist = Vector3.Distance(item.transform.position, this.transform.position);
-                    targPoint = item.transform;
+                    if(hit.collider.gameObject.tag == "Player")
+                    {
+                        Debug.Log("Seeking Player");    
+                        targPoint = target;
+                        targPlayer = target.GetComponent<PlayerObject>();
+                        output = true;
+                    }
                 }
             }
         }
@@ -104,35 +92,21 @@ public class Jericho : MonoBehaviour
     bool hearSound()
     {
         bool output = false;
+        SoundPoint[] allSoundTargets = FindObjectsOfType<SoundPoint>();
         List<SoundPoint> soundTargets = new List<SoundPoint>();
-        soundTargets.Clear();
-        Collider[] targetsInHearRadius = Physics.OverlapSphere(this.transform.position, MyAIManager.hearingRadius, MyAIManager.soundMask);
-        float distCheck = MyAIManager.hearingRadius + 1;
-        for (int i = 0; i < targetsInHearRadius.Length; i++)
+        foreach (var item in allSoundTargets)
         {
-            float dstToTarget = Vector3.Distance(this.transform.position, targetsInHearRadius[i].transform.position);
-            Vector3 dirToTarget = (targetsInHearRadius[i].transform.position - this.transform.position).normalized;
-            if (!Physics.Raycast(this.transform.position, dirToTarget))
-                dstToTarget = dstToTarget + 4;
-            if (dstToTarget < distCheck && targetsInHearRadius[i].GetComponent<SoundPoint>() != null)
-            {
-                targPoint = targetsInHearRadius[i].GetComponent<SoundPoint>().transform;
-                distCheck = dstToTarget;
-                output = true;
-            }
+            if (Vector3.Distance(item.transform.position, this.transform.position) <= MyAIManager.hearingRadius)
+                soundTargets.Add(item);
         }
-        return output;
-    }
-    public PlayerObject targPlayer()
-    {
-        PlayerObject output = null;
-        PlayerObject[] allPlayers = FindObjectsOfType<PlayerObject>();
-        foreach (var item in allPlayers)
+        float dist = MyAIManager.hearingRadius + 1;
+        foreach (var item in soundTargets)
         {
-            if (Vector3.Distance(item.transform.position, this.transform.position) <= MyNavMeshManager.agent.stoppingDistance + .1f)
+            if(Vector3.Distance(item.transform.position, transform.position) <= dist)
             {
-                output = item;
-                break;
+                dist = Vector3.Distance(item.transform.position, transform.position);
+                output = true;
+                targPoint = item.transform;
             }
         }
         return output;
@@ -296,21 +270,11 @@ public class Jericho : MonoBehaviour
     public virtual void attack(PlayerObject player) //For damage logic and unique effects
     {
         if (player == null)
-            Debug.Break();
-        Debug.Log("AttackingPlayer");
+            return;
         MyAIManager.EnemyState = aiManager.enemyState.Attack;
         if (MyAnimations.hasAnimations)
             MyAnimations.anim.SetInteger("state", 3); //Attack anim
         player.takeDamage();
-    }
-    public virtual void VanishEnemy()
-    {
-        MyAnimations.anim.CrossFade("VanishAnim", 0.2f); //Animation MUST be named this
-    }
-    public virtual void ReturnEnemy()
-    {
-        MyAnimations.anim.CrossFade("ReturnAnim", 0.2f); //Animation MUST be named this
-        StartCoroutine(waitForEndOfAnimation());
     }
     public virtual void FinishHit()
     {
@@ -318,13 +282,9 @@ public class Jericho : MonoBehaviour
         targPoint = null;
         BuildNode();
     }
-    public virtual void StartStun(float stunTime)
-    {
-        stunTimer = stunTime;
-        MyAIManager.EnemyState = aiManager.enemyState.Stunned;
-    }
     public virtual void RespawnEnemyAtClosestPoint(Vector3 startPoint)
     {
+        isStalled = false;
         Vector3 newTransform = Vector3.zero;
         PlayerObject[] players = FindObjectsOfType<PlayerObject>();
         while (newTransform == Vector3.zero)
@@ -338,18 +298,6 @@ public class Jericho : MonoBehaviour
         }
         transform.position = newTransform;
         stallTimer = 0;
-        isStalled = false;
-        respawn = false;
     }
     #endregion
-}
-[System.Serializable]
-public struct weightedAngles
-{
-    [Header("CLOCKWISE, STARTING AT 0 IN FRONT OF PLAYER")]
-    [Range(0, 7)]
-    public int nodeNum;
-    [Header("HIGHER IS BETTER, ONLY 1 EIGHT")]
-    [Range(0, 8)]
-    public int nodeWeighting;
 }
