@@ -132,7 +132,7 @@ public class MonsterController : Jericho
                     }
                 }
                 if (!MyNavMeshManager.agent.pathPending)
-                    {
+                {
                     if (MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance + 0.2f)
                     {
                         
@@ -140,27 +140,29 @@ public class MonsterController : Jericho
                         //if (!MyNavMeshManager.agent.hasPath || MyNavMeshManager.agent.velocity.sqrMagnitude == 0)
                         //{
                             
-                            if (attackCooldownReal >= attackCooldown)
-                            {
+                        if (attackCooldownReal >= attackCooldown)
+                        {
                                 
-                                if (isHunting)
+                            if (isHunting)
+                            {
+                                PlayerObject newTarg = targPlayer();
+                                if (Vector3.Distance(this.gameObject.transform.position,
+                                        newTarg.transform.position) <= 1.5f)
                                 {
-                                    PlayerObject newTarg = targPlayer();
-                                    if (Vector3.Distance(this.gameObject.transform.position,
-                                            newTarg.transform.position) <= 1.5f)
+                                    if (!newTarg.CompareTag("dead"))
                                     {
                                         attack(newTarg);
-                                        this.GetComponent<Animator>().SetTrigger("attack");
-                                        this.GetComponent<Animator>().SetInteger("state", 3);
-                                        Debug.Log(this.gameObject + " attacked");
-                                        newTarg = null;
-                                        isHunting = false;
-                                        MyAIManager.EnemyState = aiManager.enemyState.Roam;
                                     }
+                                    this.GetComponent<Animator>().SetTrigger("attack");
+                                    this.GetComponent<Animator>().SetInteger("state", 3);
+                                    newTarg = null;
+                                    isHunting = false;
+                                    MyAIManager.EnemyState = aiManager.enemyState.Roam;
                                 }
-                                BuildNode();
-                                attackCooldownReal = 0;
                             }
+                            BuildNode();
+                            attackCooldownReal = 0;
+                        }
                         //}
                     }
                 }

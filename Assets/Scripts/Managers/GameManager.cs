@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
         tMod = 0;
-        timeSpent = Time.time;
+        timeSpent = Time.timeSinceLevelLoad;
         if (PlayerPrefs.GetString("gameMode") == "Story")
         {
             taskCanvas.SetActive(false);
@@ -93,13 +93,11 @@ public class GameManager : MonoBehaviour
     public void PlayerDied(PlayerObject player)
     {
         Debug.Log("PlayerDied");
-        //TaskManager.instance.PlayerDied(player);
         player.myTasks.Clear();
         FindObjectOfType<SwapManager>().StartSwap(player);
         player.GetComponent<PlayerObject>().mapIcon.GetComponent<Button>().interactable = false;
         player.GetComponent<CapsuleCollider>().enabled = false;
-        //Destroy(player.gameObject);
-
+        player.gameObject.tag = "dead";
         player.GetComponent<Rigidbody>().useGravity = false;
         
         foreach (var comp in characters.GetComponentsInChildren<CapsuleCollider>())

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,22 +16,30 @@ public class TaskObject : MonoBehaviour
     }
     public void RunInteract()
     {
-        if (assignedKin.inputActions.PlayerMovement.Interact.IsPressed())
+        try
         {
-            Debug.Log("Interacting");
-            TaskManager.instance.RemoveFromTasks(assignedKin, thisTask);
-            foreach (Transform child in transform)
+            if (assignedKin.inputActions.PlayerMovement.Interact.IsPressed())
             {
-                Destroy(child.gameObject);
-            }
+                Debug.Log("Interacting");
+                TaskManager.instance.RemoveFromTasks(assignedKin, thisTask);
+                foreach (Transform child in transform)
+                {
+                    Destroy(child.gameObject);
+                }
 
-            /*
-            foreach(GameObject child in this.gameObject.GetComponentsInChildren<GameObject>())
-            {
-                child.SetActive(false);
+                /*
+                foreach(GameObject child in this.gameObject.GetComponentsInChildren<GameObject>())
+                {
+                    child.SetActive(false);
+                }
+                */
             }
-            */
         }
+        catch (Exception e)
+        {
+            Debug.LogException(e, this);
+        }
+       
     }
     private void OnTriggerStay(Collider other)
     {
