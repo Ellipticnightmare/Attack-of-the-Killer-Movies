@@ -150,6 +150,8 @@ public class MonsterController : Jericho
                                             newTarg.transform.position) <= 1.5f)
                                     {
                                         attack(newTarg);
+                                        this.GetComponent<Animator>().SetTrigger("attack");
+                                        this.GetComponent<Animator>().SetInteger("state", 3);
                                         Debug.Log(this.gameObject + " attacked");
                                         isHunting = false;
                                         MyAIManager.EnemyState = aiManager.enemyState.Roam;
