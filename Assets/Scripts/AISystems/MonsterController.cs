@@ -44,7 +44,7 @@ public class MonsterController : Jericho
                 }
             }
             MyNavMeshManager.maximumWebSize = Mathf.Clamp(MyNavMeshManager.maximumWebSize, 7, 15);
-            MyNavMeshManager.revisitThreshold = Mathf.Clamp(MyNavMeshManager.revisitThreshold, 69, 91);
+            MyNavMeshManager.revisitThreshold = Mathf.Clamp(MyNavMeshManager.revisitThreshold, 1, 91);
             if (attackCooldownReal < attackCooldown)
                 attackCooldownReal += Time.deltaTime;
             MyNavMeshManager.agent.speed = MyAIManager.moveSpeed;
@@ -170,8 +170,8 @@ public class MonsterController : Jericho
             if (!respawn)
             {
                 stallTimer += Time.deltaTime;
-                respawn = stallTimer > 4.0f;
-                if (stallTimer > 4.0f)
+                respawn = stallTimer > 1.75f;
+                if (stallTimer > 1.75f)
                 {
                     RespawnEnemyAtClosestPoint(myPoint);
                 }

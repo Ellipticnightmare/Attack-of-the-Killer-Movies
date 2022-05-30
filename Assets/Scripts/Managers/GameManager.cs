@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
     public GameObject SoundPoint, startInstructions, taskCanvas, endGameScreenUI;
     public bool storyMode = false;
     public TaskUI myTaskUI;
+    public GameObject teleSpot;
+    public Sprite deadIcon;
     private void Awake()
     {
         instance = this;
@@ -89,9 +91,24 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("PlayerDied");
         TaskManager.instance.PlayerDied(player);
-        Destroy(player.gameObject);
         FindObjectOfType<SwapManager>().StartSwap(player);
-        
+        player.GetComponent<PlayerObject>().mapIcon.GetComponent<Button>().interactable = false;
+        player.GetComponent<CapsuleCollider>().enabled = false;
+        //Destroy(player.gameObject);
+
+        player.GetComponent<Rigidbody>().useGravity = false;
+
+
+
+        //player.GetComponent<PlayerObject>().mapIcon.GetComponent<Image>().sprite = deadIcon;
+        //foreach (var skin in player.transform.GetChild(0).GetComponentsInChildren<SkinnedMeshRenderer>())
+        //{
+        //    skin.enabled = false;
+        //}
+        //player.gameObject.transform.position = teleSpot.transform.position;
+        //player.transform.GetChild(0).gameObject.SetActive(false);
+        //player.GetComponent<PlayerObject>().transform.GetComponent<MeshRenderer>().enabled = false;
+        //Destroy(player.GetComponent<Rigidbody>());
     }
     public void togglePause()
     {

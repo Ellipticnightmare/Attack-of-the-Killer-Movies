@@ -259,7 +259,7 @@ public class navmeshManager
     public int maximumWebSize = 8;
     [Range(0, 10)]
     public int roamingDesire = 0;
-    [Range(70, 90)]
-    public int revisitThreshold = 70;
+    [Range(1, 90)]
+    public int revisitThreshold = 30;
 }
 #endregion

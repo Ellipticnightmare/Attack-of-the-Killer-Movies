@@ -21,6 +21,7 @@ public class PlayerObject : MonoBehaviour
     public bool isFocus;
     //END IMPORTANT
     public Sprite actorFace;
+    public GameObject mapIcon;
     public RenderTexture showUICam;
     public void enableControl()
     {
