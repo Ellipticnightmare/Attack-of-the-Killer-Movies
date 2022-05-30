@@ -94,6 +94,7 @@ public class GameManager : MonoBehaviour
     {
         Debug.Log("PlayerDied");
         //TaskManager.instance.PlayerDied(player);
+        player.myTasks.Clear();
         FindObjectOfType<SwapManager>().StartSwap(player);
         player.GetComponent<PlayerObject>().mapIcon.GetComponent<Button>().interactable = false;
         player.GetComponent<CapsuleCollider>().enabled = false;

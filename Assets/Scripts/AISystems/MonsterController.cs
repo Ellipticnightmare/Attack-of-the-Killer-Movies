@@ -16,7 +16,7 @@ public class MonsterController : Jericho
         MyAIManager.patienceIndex = 15;
         specialEventTimer = specialEventTimerSet;
         trackTimer = 2;
-        attackCooldown = 1;
+        attackCooldown = 2.0f;
         MyNavMeshManager.agent = this.GetComponent<NavMeshAgent>();
         MyAnimations.anim = this.GetComponent<Animator>();
         MyNavMeshManager.path = new NavMeshPath();
