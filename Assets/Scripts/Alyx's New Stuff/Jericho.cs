@@ -129,7 +129,7 @@ public class Jericho : MonoBehaviour
         PlayerObject[] allPlayers = FindObjectsOfType<PlayerObject>();
         foreach (var item in allPlayers)
         {
-            if (Vector3.Distance(item.transform.position, this.transform.position) <= MyNavMeshManager.agent.stoppingDistance + .1f)
+            if (Vector3.Distance(item.transform.position, this.transform.position) <= MyNavMeshManager.agent.stoppingDistance + .2f)
             {
                 output = item;
                 break;
