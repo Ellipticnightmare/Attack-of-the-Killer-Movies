@@ -127,7 +127,7 @@ public class TaskManager : MonoBehaviour
         }
         yield return new WaitForEndOfFrame();
         //Destroy(player.gameObject);
-        FindObjectOfType<SwapManager>().StartSwap(player);
+        //FindObjectOfType<SwapManager>().StartSwap(player);
         UpdateWorld();
     }
 }

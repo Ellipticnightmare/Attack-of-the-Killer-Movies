@@ -38,21 +38,25 @@ public class Jericho : MonoBehaviour
     }
     void updateNodeWeight() //gets run when enemy spots player for the first time, exiting the Roam state
     {
-        float distance = MyNavMeshManager.nodeWeightDistance;
-        webNodePoint x = new webNodePoint();
-        int newI = 0;
-        for (int i = 0; i < MyNavMeshManager.nodeWeb.Count; i++)
+        if (targPlayer() != null && MyNavMeshManager.nodeWeb.Count > 0)
         {
-            if (Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer().transform.position) < distance)
+            float distance = MyNavMeshManager.nodeWeightDistance;
+            webNodePoint x = new webNodePoint();
+            int newI = 0;
+            for (int i = 0; i < MyNavMeshManager.nodeWeb.Count; i++)
             {
-                x = MyNavMeshManager.nodeWeb[i];
-                newI = i;
-                distance = Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer().transform.position);
+                if (Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer().transform.position) < distance)
+                {
+                    x = MyNavMeshManager.nodeWeb[i];
+                    newI = i;
+                    distance = Vector3.Distance(MyNavMeshManager.nodeWeb[i].nodePoint, targPlayer().transform.position);
+                }
             }
+            x.weighting = 100;
+            avoidDest = x.nodePoint;
+            MyNavMeshManager.nodeWeb[newI] = x;
         }
-        x.weighting = 100;
-        avoidDest = x.nodePoint;
-        MyNavMeshManager.nodeWeb[newI] = x;
+        
     }
     public int calculateWeighting(Vector3 pointPos)
     {

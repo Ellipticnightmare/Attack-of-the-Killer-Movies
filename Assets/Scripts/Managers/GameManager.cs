@@ -18,6 +18,9 @@ public class GameManager : MonoBehaviour
     public TaskUI myTaskUI;
     public GameObject teleSpot;
     public Sprite deadIcon;
+    public int deathCount;
+    public GameObject characters;
+    public int count;
     private void Awake()
     {
         instance = this;
@@ -90,16 +93,31 @@ public class GameManager : MonoBehaviour
     public void PlayerDied(PlayerObject player)
     {
         Debug.Log("PlayerDied");
-        TaskManager.instance.PlayerDied(player);
+        //TaskManager.instance.PlayerDied(player);
         FindObjectOfType<SwapManager>().StartSwap(player);
         player.GetComponent<PlayerObject>().mapIcon.GetComponent<Button>().interactable = false;
         player.GetComponent<CapsuleCollider>().enabled = false;
         //Destroy(player.gameObject);
 
         player.GetComponent<Rigidbody>().useGravity = false;
+        
+        foreach (var comp in characters.GetComponentsInChildren<CapsuleCollider>())
+        {
+            if (!comp.enabled)
+            {
+                count++;
+            }
+        }
 
-
-
+        if (count == 4)
+        {
+            SceneManager.LoadScene("GameOver");
+        }
+        else if (count != 4)
+        {
+            count = 0;
+        }
+        
         //player.GetComponent<PlayerObject>().mapIcon.GetComponent<Image>().sprite = deadIcon;
         //foreach (var skin in player.transform.GetChild(0).GetComponentsInChildren<SkinnedMeshRenderer>())
         //{

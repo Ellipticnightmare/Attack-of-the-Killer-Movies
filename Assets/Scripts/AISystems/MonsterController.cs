@@ -132,17 +132,17 @@ public class MonsterController : Jericho
                     }
                 }
                 if (!MyNavMeshManager.agent.pathPending)
-                    Debug.Log(this.gameObject + " has pending path 1");{
+                    {
                     if (MyNavMeshManager.agent.remainingDistance <= MyNavMeshManager.agent.stoppingDistance + 0.2f)
                     {
-                        Debug.Log(this.gameObject + " is in range 2");
+                        
                         MyNavMeshManager.agent.velocity = new Vector3(0, 0, 0);
                         //if (!MyNavMeshManager.agent.hasPath || MyNavMeshManager.agent.velocity.sqrMagnitude == 0)
                         //{
-                            Debug.Log(this.gameObject + " weird thing 3");
+                            
                             if (attackCooldownReal >= attackCooldown)
                             {
-                                Debug.Log(this.gameObject + " attack cooldown 4");
+                                
                                 if (isHunting)
                                 {
                                     PlayerObject newTarg = targPlayer();
@@ -153,6 +153,7 @@ public class MonsterController : Jericho
                                         this.GetComponent<Animator>().SetTrigger("attack");
                                         this.GetComponent<Animator>().SetInteger("state", 3);
                                         Debug.Log(this.gameObject + " attacked");
+                                        newTarg = null;
                                         isHunting = false;
                                         MyAIManager.EnemyState = aiManager.enemyState.Roam;
                                     }
